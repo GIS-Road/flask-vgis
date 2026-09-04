@@ -1,5 +1,4 @@
-from enum import unique
-
+# 用户表结构
 from app.extentions import db
 
 class User(db.Model):
