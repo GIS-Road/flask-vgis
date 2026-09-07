@@ -20,12 +20,15 @@ def login():
 # 用户注册
 @bp.route("/register",methods=["GET","POST"])
 def register():
+    username = request.form.get("username")
     if request.method == "POST":
-        username = request.form.get("username","")
-        if username:
-            return redirect(url_for("user.login"))
+        if not username:
+            # return redirect(url_for("user.login"))
+            return "请确保用户名正确"
     # return render_template("user/login.html")
-    return redirect(url_for("user.login"))
+    # return redirect(url_for("user.login"))
+        return "用户注册成功！"
+    return "成功了"
 
 # 退出登陆
 @bp.route("logout",methods=["GET","POST"])
