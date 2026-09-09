@@ -1,4 +1,11 @@
-# 用户蓝图
+"""
+用户接口（蓝图）
+
+Author:    gis_road
+Version:   1.0.0
+Date:      2026/9/9
+"""
+
 from flask import Blueprint,render_template,request,session,redirect,url_for
 from app.models.user.user import User
 from app.extentions import db
