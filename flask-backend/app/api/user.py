@@ -37,6 +37,8 @@ def add():
         return ("请求体不是合法json")
     username = data.get("username")
     email = data.get("email")
+    db.session.add(data)
+    db.session.commit()
     # 成功和失败的统一处理情况
     return ({"received": data})
 

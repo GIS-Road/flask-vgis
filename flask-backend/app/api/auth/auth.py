@@ -1,6 +1,8 @@
 # 用户认证蓝图
 
 from flask import Blueprint,render_template,request,session,redirect,url_for
+from app.extentions import db
+from app.models.user.user import User
 
 # 创建蓝图实例
 bp = Blueprint("auth",__name__)
@@ -20,13 +22,19 @@ def login():
 # 用户注册
 @bp.route("/register",methods=["GET","POST"])
 def register():
-    username = request.form.get("username")
+    data = request.get_json()
     if request.method == "POST":
-        if not username:
-            # return redirect(url_for("user.login"))
-            return "请确保用户名正确"
-    # return render_template("user/login.html")
-    # return redirect(url_for("user.login"))
+        if not data:
+            return "请传递用户对象"
+
+        # ③ 关键一步：从 dict 里取字段，构造成 User 模型对象
+        user = User(
+            username=data.get("username"),
+            phone=data.get("phone"),
+            email=data.get("email"),
+        )
+        db.session.add(user)
+        db.session.commit()
         return "用户注册成功！"
     return "成功了"
 

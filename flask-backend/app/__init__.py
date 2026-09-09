@@ -18,6 +18,9 @@ def create_app(config_class=Config):
 
     # 数据库初始化
     db.init_app(app)
+
+    with app.app_context():           # 关键②：必须在应用上下文里
+        db.create_all()               # 关键③：这一步才真正建表
     # 数据库迁移命令
     migrate.init_app(app,db)
 
