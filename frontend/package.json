@@ -1,0 +1,32 @@
+{
+  "name": "frontend",
+  "version": "1.0.0",
+  "description": "地理数据可视化展示，WebGIS 可视化系统",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --open",
+    "build": "vite build",
+    "test": "vite test"
+  },
+  "keywords": [
+    "gis",
+    "GIS",
+    "地理信息",
+    "可视化"
+  ],
+  "author": "gis_road",
+  "license": "",
+  "dependencies": {
+    "element-plus": "^2.14.5",
+    "vue": "^3.5.42"
+  },
+  "devDependencies": {
+    "@types/node": "^26.5.0",
+    "@vitejs/plugin-vue": "^6.0.8",
+    "typescript": "^7.0.2",
+    "unplugin-auto-import": "^21.1.0",
+    "unplugin-vue-components": "^32.1.0",
+    "vite": "^8.2.2"
+  }
+}
