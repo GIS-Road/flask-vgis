@@ -17,5 +17,9 @@ export default defineConfig({
     server:{
         host:"localhost",
         port:8998
+    },
+    resolve:{
+        tsconfigPaths:true,
+        extensions:[".ts", ".tsx",".mjs",".js",".jsx",".json",".vue"]
     }
 })

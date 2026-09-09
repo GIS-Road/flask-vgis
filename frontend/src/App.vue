@@ -8,18 +8,16 @@
     </div>
   </div>
 </template>
-<script setup>
-import {onMounted,ref} from "vue";
+<script setup lang="ts">
+import { onMounted, ref } from 'vue'
 
-const inputValue = ref("")
+const inputValue = ref('')
 
 const props = defineProps({})
-onMounted(()=>{
-
-})
+onMounted(() => {})
 </script>
 <style scoped>
-.app-container{
+.app-container {
   margin: 100px;
   font-size: 24px;
   font-weight: bold;
