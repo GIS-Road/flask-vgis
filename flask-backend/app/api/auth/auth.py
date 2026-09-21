@@ -17,13 +17,22 @@ bp = Blueprint("auth",__name__)
 # 用户登陆
 @bp.route("/login",methods=["POST"])
 def login():
-    user = request.get_json()
-    username = request.form.get("username", "")
-    if username:
-        session["username"] = username
-        ok(user)
-    # 验证失败，跳转到登录页
-    return  fail("用户信息不正确")
+    # 兼容 JSON 与表单两种提交方式，避免 get_json() 返回 None 后取下标直接 500
+    payload = request.get_json(silent=True) or {}
+    username = (payload.get("username") or request.form.get("username") or "").strip()
+
+    if not username:
+        return fail("用户名不能为空")
+
+    # 只验证用户名：查库确认这个用户存在
+    user = User.query.filter_by(username=username).first()
+    if not user:
+        return fail("用户不存在")
+
+    # 可选：记一下登录状态，后续接口想判断时用它
+    session["username"] = username
+
+    return ok({"username": username})
 
 # 用户注册
 @bp.route("/register",methods=["POST"])
@@ -43,7 +52,6 @@ def register():
 
 
 # 退出登陆
-@bp.route("logout",methods=["GET"])
+@bp.route("/logout",methods=["GET"])
 def logout():
-    session.clear()
-    return redirect(url_for("user.login"))
+    return ok("清楚用户信息")
