@@ -6,7 +6,6 @@ Version:   1.0.0
 Date:      2026/9/9
 """
 
-
 from flask import Blueprint,render_template,request,session,redirect,url_for
 from app.extentions import db
 from app.models.user.user import User
@@ -41,14 +40,17 @@ def register():
     if not data:
         return fail("用户信息不正确")
     # ③ 关键一步：从 dict 里取字段，构造成 User 模型对象
+    print("username",data.get("username"))
+    print("password",data.get("password"))
     user = User(
-        username=data.get("username"),
-        phone=data.get("phone"),
-        email=data.get("email"),
+        username = data.get("username"),
+        password = data.get("password")
+        # phone=data.get("phone"),
+        # email=data.get("email"),
     )
     db.session.add(user)
     db.session.commit()
-    return ok(user)
+    return ok(user.to_dict())
 
 
 # 退出登陆

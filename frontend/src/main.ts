@@ -5,6 +5,8 @@ import router from './router/router'
 
 import './permissions'
 
+import 'ol/ol.css'
+
 const app = createApp(App)
 
 app.use(router)
