@@ -56,4 +56,4 @@ def register():
 # 退出登陆
 @bp.route("/logout",methods=["GET"])
 def logout():
-    return ok("清楚用户信息")
+    return ok("清除用户信息")

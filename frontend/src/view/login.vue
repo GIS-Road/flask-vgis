@@ -27,6 +27,7 @@ import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
 // 按需引入时，样式也得手动带（全量引入 element-plus 的不需要）
 import 'element-plus/es/components/message/style/css'
+import { setToken } from '../utils/auth'
 
 const router = useRouter()
 
@@ -57,8 +58,9 @@ const login = () => {
             return
           }
           ElMessage.success('登录成功')
-
+          setToken('admin')
           router.push('/')
+          debugger
         })
         .catch((err) => {
           console.log(err)
