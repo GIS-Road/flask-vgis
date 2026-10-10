@@ -60,7 +60,6 @@ const login = () => {
           ElMessage.success('登录成功')
           setToken('admin')
           router.push('/')
-          debugger
         })
         .catch((err) => {
           console.log(err)
