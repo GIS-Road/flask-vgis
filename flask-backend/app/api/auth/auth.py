@@ -19,14 +19,19 @@ def login():
     # 兼容 JSON 与表单两种提交方式，避免 get_json() 返回 None 后取下标直接 500
     payload = request.get_json(silent=True) or {}
     username = (payload.get("username") or request.form.get("username") or "").strip()
+    password = (payload.get("password") or request.form.get("password") or "").strip()
 
     if not username:
         return fail("用户名不能为空")
+    if not password:
+        return fail("密码不能为空")
 
     # 只验证用户名：查库确认这个用户存在
     user = User.query.filter_by(username=username).first()
     if not user:
         return fail("用户不存在")
+    if password != user.password:
+        return fail("用户密码不正确！")
 
     # 可选：记一下登录状态，后续接口想判断时用它
     session["username"] = username
