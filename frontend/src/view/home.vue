@@ -6,7 +6,7 @@
       </div>
       <div class="header-user">
         <div>
-          <Avatar style="width: 1em; height: 1em; margin-right: 8px" />
+          <Avatar class="user-icon" style="width: 1em; height: 1em; margin-right: 8px" />
           <el-dropdown placement="bottom-end">
             <el-button> 山海经 </el-button>
             <template #dropdown>
@@ -75,7 +75,9 @@ onMounted(() => {})
 .header-user {
   position: absolute;
   right: 20px;
-  .logout {
-  }
+}
+.user-icon {
+  vertical-align: middle;
+  font-size: 30px;
 }
 </style>

@@ -14,9 +14,12 @@
           <el-button type="primary" class="login-btn" @click="login">登录</el-button>
         </el-form-item>
       </el-form>
-      <el-text class="login-register" type="primary" @click="registerAccount"
-        >还没有账号？立即注册</el-text
-      >
+      <div>
+        <el-text class="forget-password" type="primary" @click="forgetPassword">忘记密码？</el-text>
+        <el-text class="login-register" type="primary" @click="registerAccount"
+          >还没有账号？立即注册</el-text
+        >
+      </div>
     </div>
   </div>
 </template>
@@ -54,7 +57,8 @@ const login = () => {
         .then((res) => {
           console.log(res)
           if (res.data.code !== 200) {
-            ElMessage.error('请输入正确的用户名和密码')
+            // ElMessage.error('请输入正确的用户名和密码')
+            ElMessage.error(res.data.msg)
             return
           }
           ElMessage.success('登录成功')
@@ -68,8 +72,14 @@ const login = () => {
   })
 }
 
+// 注册账号
 const registerAccount = () => {
   router.push('/register')
+}
+
+// 忘记密码
+const forgetPassword = () => {
+  router.push('/forgetPassword')
 }
 </script>
 <style scoped lang="scss">
@@ -99,6 +109,12 @@ const registerAccount = () => {
   .login-btn {
     width: 100%;
     margin: 10px 0;
+  }
+  .forget-password {
+    float: left;
+    &:hover {
+      cursor: pointer;
+    }
   }
   .login-register {
     float: right;
