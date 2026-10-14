@@ -6,7 +6,7 @@ Version:   1.0.0
 Date:      2026/9/9
 """
 
-from flask import Blueprint,render_template,request,session,redirect,url_for
+from flask import Blueprint,request
 from app.models.user.user import User
 from app.extentions import db
 from app.common.response import ok,fail
@@ -27,7 +27,7 @@ def get_user_by_username(username):
     # user = User.query.get(username)
     user = User.query.filter_by(username=username).first()
     if not user:
-        return fail("查询用户不存在")
+        return fail("用户 "+username+" 不存在")
     return ok(user.to_dict())
 
 # 查询用户列表
