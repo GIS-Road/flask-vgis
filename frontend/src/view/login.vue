@@ -8,7 +8,12 @@
           <el-input v-model="loginForm.username" placeholder="请输入用户名"></el-input>
         </el-form-item>
         <el-form-item label="用户密码" prop="password">
-          <el-input v-model="loginForm.password" placeholder="请输入用户密码"></el-input>
+          <el-input
+            v-model="loginForm.password"
+            placeholder="请输入用户密码"
+            type="password"
+            show-password
+          ></el-input>
         </el-form-item>
         <el-form-item style="width: 100%">
           <el-button type="primary" class="login-btn" @click="login">登录</el-button>
@@ -57,7 +62,6 @@ const login = () => {
         .then((res) => {
           console.log(res)
           if (res.data.code !== 200) {
-            // ElMessage.error('请输入正确的用户名和密码')
             ElMessage.error(res.data.msg)
             return
           }

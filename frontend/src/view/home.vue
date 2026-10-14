@@ -2,7 +2,7 @@
   <div class="main-container">
     <div class="header">
       <div class="header-title">
-        <header>WebGIS 演示系统</header>
+        <header>WebGIS 基础信息系统</header>
       </div>
       <div class="header-user">
         <div>

@@ -8,12 +8,19 @@
           <el-input v-model="registerForm.username" placeholder="请输入用户名"></el-input>
         </el-form-item>
         <el-form-item label="用户密码" prop="password">
-          <el-input v-model="registerForm.password" placeholder="请输入用户密码"></el-input>
+          <el-input
+            v-model="registerForm.password"
+            placeholder="请输入用户密码"
+            type="password"
+            show-password
+          ></el-input>
         </el-form-item>
-        <el-form-item label="确认密码" prop="password">
+        <el-form-item label="确认密码" prop="confirmPassword">
           <el-input
             v-model="registerForm.confirmPassword"
             placeholder="请再次输入用户密码"
+            type="password"
+            show-password
           ></el-input>
         </el-form-item>
         <el-form-item style="width: 100%">
@@ -41,16 +48,37 @@ const registerForm = ref({
   confirmPassword: '',
 })
 
+// 密码校验
+const validatePass = (rule: any, value: any, callback: any) => {
+  if (value === '') {
+    callback(new Error('请输入密码'))
+  } else {
+    if (registerForm.value.password !== '') {
+      if (!registerFormRef.value) return
+      registerFormRef.value.validateField('password')
+    }
+    callback()
+  }
+}
+
+// 二次密码校验
+const validateConfirmPassword = async (rule: any, value: any, callback: any): Promise<void> => {
+  if (value === '') {
+    callback(new Error('请再次输入密码'))
+  } else if (value !== registerForm.value.password) {
+    callback(new Error('两次输入的密码不一致'))
+  } else {
+    callback()
+  }
+}
 const rules = ref({
   username: [{ required: true, message: '用户名不能为空！', trigger: 'blur' }],
   password: [
     { required: true, message: '密码不能为空！', trigger: 'blur' },
     { min: 6, max: 20, message: '密码长度不能少于6位！', trigger: 'blur' },
   ],
-  confirmPassword: [
-    { required: true, message: '密码不能为空！', trigger: 'blur' },
-    { min: 6, max: 20, message: '密码长度不能少于6位！', trigger: 'blur' },
-  ],
+  // password: [{ validator: validatePass, trigger: 'blur' }],
+  confirmPassword: [{ required: true, validator: validateConfirmPassword, trigger: 'blur' }],
 })
 
 const updatePassword = () => {
@@ -59,6 +87,10 @@ const updatePassword = () => {
     if (valid) {
       console.log('registerForm.value.username：', registerForm.value.username)
       axios.get('/dev-api/user/' + registerForm.value.username).then((res) => {
+        if (res.data.code !== 200) {
+          ElMessage.error(res.data.msg)
+          return
+        }
         console.log(res)
         const user = res.data.data
         const updatedUser = { ...user }
