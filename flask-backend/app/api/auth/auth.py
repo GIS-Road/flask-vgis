@@ -33,7 +33,8 @@ def login():
     if password != user.password:
         return fail("用户密码不正确！")
 
-    # 可选：记一下登录状态，后续接口想判断时用它
+    # 记登录状态：同时存 id 和 username（username 非唯一，优先用 id 定位）
+    session["user_id"] = user.id
     session["username"] = username
 
     return ok({"username": username})
@@ -61,4 +62,28 @@ def register():
 # 退出登陆
 @bp.route("/logout",methods=["GET"])
 def logout():
-    return ok("清除用户信息")
+    session.clear()
+    return ok("已退出登录")
+
+
+# 获取当前登录用户
+@bp.route("/me", methods=["GET"])
+def get_current_user():
+    user_id = session.get("user_id")
+    username = session.get("username")
+
+    # 没有任何登录标记 → 未登录
+    if not user_id and not username:
+        return fail("未登录", 401)
+
+    # 优先按 id 查；只有旧 session 的 username 时兜底
+    user = db.session.get(User, user_id) if user_id else None
+    if user is None and username:
+        user = User.query.filter_by(username=username).first()
+
+    if not user:
+        # session 脏了（用户被删/改名），清掉让前端重新登录
+        session.clear()
+        return fail("用户不存在或登录已失效", 401)
+
+    return ok(user.to_dict())
