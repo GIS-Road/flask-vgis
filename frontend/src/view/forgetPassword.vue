@@ -47,20 +47,6 @@ const registerForm = ref({
   password: '',
   confirmPassword: '',
 })
-
-// 密码校验
-const validatePass = (rule: any, value: any, callback: any) => {
-  if (value === '') {
-    callback(new Error('请输入密码'))
-  } else {
-    if (registerForm.value.password !== '') {
-      if (!registerFormRef.value) return
-      registerFormRef.value.validateField('password')
-    }
-    callback()
-  }
-}
-
 // 二次密码校验
 const validateConfirmPassword = async (rule: any, value: any, callback: any): Promise<void> => {
   if (value === '') {
@@ -77,7 +63,6 @@ const rules = ref({
     { required: true, message: '密码不能为空！', trigger: 'blur' },
     { min: 6, max: 20, message: '密码长度不能少于6位！', trigger: 'blur' },
   ],
-  // password: [{ validator: validatePass, trigger: 'blur' }],
   confirmPassword: [{ required: true, validator: validateConfirmPassword, trigger: 'blur' }],
 })
 

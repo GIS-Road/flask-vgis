@@ -26,7 +26,7 @@
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import Map from './map/index.vue'
-import { removeToken } from '../utils/auth'
+import { removeToken } from '@/utils/auth'
 import { Avatar } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 const router = useRouter()

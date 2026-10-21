@@ -21,7 +21,12 @@ declare module 'vue' {
     ElIcon: typeof import('element-plus/es')['ElIcon']
     ElInput: typeof import('element-plus/es')['ElInput']
     ElText: typeof import('element-plus/es')['ElText']
+    LayerManager: typeof import('./src/components/gis/2d/layerManager/index.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    Searchbar: typeof import('./src/components/gis/2d/searchbar/index.vue')['default']
+    Statusbar: typeof import('./src/components/gis/2d/statusbar/index.vue')['default']
+    Toolbar: typeof import('./src/components/gis/2d/toolbar/index.vue')['default']
+    Zoombar: typeof import('./src/components/gis/2d/zoombar/index.vue')['default']
   }
 }

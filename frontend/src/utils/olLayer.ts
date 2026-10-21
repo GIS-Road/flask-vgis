@@ -7,9 +7,8 @@
 import { XYZ } from 'ol/source.js'
 import TileLayer from 'ol/layer/Tile.js'
 
-
 const EPSGCODE = 4490
-const TDTTOKEN = "1d109683f4d84198e37a38c442d68311"
+const TDTTOKEN = '1d109683f4d84198e37a38c442d68311'
 
 /**
  * 天地图影像服务
@@ -32,61 +31,59 @@ export function addTdtImageLayer() {
 
 /**
  * 天地图影像服务
- * @param map：地图对象
+ * @param map
  */
-export function addTDTImageLayer(map = window._map){
+export function addTDTImageLayer(map = window._map) {
   // 添加地图
-  const url = "http://t{0-7}.tianditu.com/DataServer?x={x}&y={y}&l={z}&T=img_c&tk=" + TDTTOKEN;
+  const url = 'http://t{0-7}.tianditu.com/DataServer?x={x}&y={y}&l={z}&T=img_c&tk=' + TDTTOKEN
   const source = new XYZ({
     url: url,
-    projection: "EPSG:4326"
-  });
+    projection: 'EPSG:4326',
+  })
   const tdtLayer = new TileLayer({
     source: source,
-    isBaseMap: true
-  });
-  tdtLayer.set("layerName","天地图影像")
+  })
+  tdtLayer.set('layerName', '天地图影像')
+  tdtLayer.set('isBaseMap', true)
   map.addLayer(tdtLayer)
 }
 /**
  * 天地图矢量服务
- * @param map：地图对象
+ * @param map
  */
-export function addTDTVecLayer(map = window._map){
+export function addTDTVecLayer(map = window._map) {
   // 添加地图
-  const url = "http://t{0-7}.tianditu.com/DataServer?x={x}&y={y}&l={z}&T=vec_c&tk=" + TDTTOKEN;
+  const url = 'http://t{0-7}.tianditu.com/DataServer?x={x}&y={y}&l={z}&T=vec_c&tk=' + TDTTOKEN
   // let url = "https://wx.zrzyfw.cn/tdt/DataServer?x={x}&y={y}&l={z}&T=vec_c&tk="+TDTTOKEN;
   const source = new XYZ({
     url: url,
-    projection: "EPSG:4326"
-  });
+    projection: 'EPSG:4326',
+  })
   const tdtLayer = new TileLayer({
     source: source,
-    isBaseMap: true
-  });
-  tdtLayer.set("layerName","天地图矢量")
+  })
+  tdtLayer.set('layerName', '天地图矢量')
+  tdtLayer.set('isBaseMap', true)
   map.addLayer(tdtLayer)
 }
-
 
 /**
  * 天地图注记服务
- * @param map：地图对象
+ * @param map
  */
-export function addTDTCvaLayer(map = window._map){
+export function addTDTCvaLayer(map = window._map) {
   // 添加地图
-  const url = "http://t{0-7}.tianditu.com/DataServer?x={x}&y={y}&l={z}&T=cva_c&tk=" + TDTTOKEN;
+  const url = 'http://t{0-7}.tianditu.com/DataServer?x={x}&y={y}&l={z}&T=cva_c&tk=' + TDTTOKEN
   // let url = "https://wx.zrzyfw.cn/tdt/DataServer?x={x}&y={y}&l={z}&T=cva_c&tk="+TDTTOKEN;
   const source = new XYZ({
     url: url,
-    projection: "EPSG:4326"
-  });
+    projection: 'EPSG:4326',
+  })
   const tdtLayer = new TileLayer({
     source: source,
     zIndex: 999,
-    isBaseMap: true
-  });
-  tdtLayer.set("layerName","天地图注记")
+  })
+  tdtLayer.set('layerName', '天地图注记')
+  tdtLayer.set('isBaseMap', true)
   map.addLayer(tdtLayer)
 }
-
