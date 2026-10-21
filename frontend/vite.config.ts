@@ -30,7 +30,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, 'src'),
+      '@': path.resolve(__dirname, './src'),
     },
     tsconfigPaths: true,
     extensions: ['.ts', '.tsx', '.mjs', '.js', '.jsx', '.json', '.vue'],

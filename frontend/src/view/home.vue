@@ -8,7 +8,7 @@
         <div>
           <Avatar class="user-icon" style="width: 1em; height: 1em; margin-right: 8px" />
           <el-dropdown placement="bottom-end">
-            <el-button> 山海经 </el-button>
+            <el-button> {{ user.username }} </el-button>
             <template #dropdown>
               <el-dropdown-menu>
                 <el-dropdown-item>用户中心</el-dropdown-item>
@@ -29,7 +29,10 @@ import Map from './map/index.vue'
 import { removeToken } from '@/utils/auth'
 import { Avatar } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import axios from 'axios'
 const router = useRouter()
+
+const user = ref({})
 
 const logout = () => {
   ElMessageBox.confirm('是否要退出系统？', '警告', {
@@ -52,8 +55,16 @@ const logout = () => {
       // })
     })
 }
+// 获取当前用户信息
+const getCurrentUser = () => {
+  axios.get('/dev-api/me').then((res) => {
+    user.value = res.data.data
+  })
+}
 
-onMounted(() => {})
+onMounted(() => {
+  getCurrentUser()
+})
 </script>
 <style scoped lang="scss">
 .main-container {

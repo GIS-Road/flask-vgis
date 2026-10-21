@@ -20,6 +20,16 @@
         <li v-for="item in tableData" :key="item.ogc_fid" class="poi-item" @click="addToMap(item)">
           {{ item.name }}
         </li>
+        <el-pagination
+          size="small"
+          background
+          layout="prev, pager, next"
+          :total="total"
+          :page-size="size"
+          :current-page="page"
+          class="mt-4"
+          @current-change="pageChange"
+        />
       </ul>
     </div>
   </div>
@@ -32,10 +42,11 @@ import { Close } from '@element-plus/icons-vue'
 import { Vector as VectorSource } from 'ol/source'
 import { GeoJSON } from 'ol/format'
 import VectorLayer from 'ol/layer/Vector'
+import { createPulseEffect } from '@/utils/openLayers/olTools'
 
 const searchValue = ref('')
-const page = 1
-const size = 20
+const page = ref(1)
+const size = ref(10)
 const total = ref(0)
 
 const tableData = ref([])
@@ -46,7 +57,9 @@ const searchPoi = () => {
     return
   }
   axios
-    .get('/dev-api/poi/list?page=' + page + '&size=' + size + '&name=' + searchValue.value)
+    .get(
+      '/dev-api/poi/list?page=' + page.value + '&size=' + size.value + '&name=' + searchValue.value
+    )
     .then((res) => {
       console.log('请求响应：', res)
       if (res.data.code !== 200) {
@@ -56,6 +69,11 @@ const searchPoi = () => {
       tableData.value = res.data.data.rows
       total.value = res.data.data.total
     })
+}
+
+const pageChange = (currentPage: number) => {
+  page.value = currentPage
+  searchPoi()
 }
 
 // 关闭结果面板
@@ -72,17 +90,22 @@ const closePanel = () => {
 
 const addToMap = (poi: object) => {
   const geomJson = typeof poi.geom_json === 'string' ? JSON.parse(poi.geom_json) : poi.geom_json
-  const source = new VectorSource({
-    features: new GeoJSON().readFeatures(geomJson),
-  })
-  const layer = new VectorLayer({
-    source,
-  })
-  layer.set('layerName', 'poiLayer')
-  window._map.addLayer(layer)
+  // console.log('json数据·1：', geomJson)
+  // const source = new VectorSource({
+  //   features: new GeoJSON().readFeatures(geomJson),
+  // })
+  // const layer = new VectorLayer({
+  //   source,
+  // })
+  // layer.set('layerName', 'poiLayer')
+  // window._map.addLayer(layer)
+  // const coords = [geomJson[0], geomJson[1]]
+  createPulseEffect(window._map, geomJson.coordinates)
+
   // 获取图层范围
-  const layerExtent = layer.getSource()?.getExtent()
-  window._map.getView().fit(layerExtent)
+  // const layerExtent = layer.getSource()?.getExtent()
+  // window._map.getView().fit(layerExtent)
+  window._map.getView().setZoom(15)
 }
 </script>
 <style scoped lang="scss">
@@ -121,10 +144,14 @@ const addToMap = (poi: object) => {
   width: 1.5rem;
   height: 1.5rem;
   color: #ddd;
+  padding: 2px;
   &:hover {
     cursor: pointer;
     color: #ffffff;
     filter: brightness(150%);
+    background: rgba(255, 0, 0, 0.44);
+    border-radius: 50%;
+    transform: rotate(180deg) scale(1);
     transition: all 0.25s ease-in-out;
   }
 }
