@@ -6,7 +6,7 @@ Version:   1.0.0
 Date:      2026/9/9
 """
 
-from flask import Blueprint,render_template,request,session,redirect,url_for
+from flask import Blueprint,request,session
 from app.extentions import db
 from app.models.user.user import User
 from app.common.response import ok,fail
