@@ -76,7 +76,13 @@ onMounted(() => {
   align-items: center;
   padding: 0 20px;
   height: 60px;
-  background: #0da6ff;
+  //background: #0da6ff;
+  //background: linear-gradient(to right, rgb(18, 194, 233), rgb(196, 113, 237), rgb(246, 79, 89));
+  //background: linear-gradient(to right, rgb(33, 147, 176), rgb(109, 213, 237));
+  //background: linear-gradient(135deg, #0080FF 0%, #00FFFF 100%);
+  //background: linear-gradient(135deg, #00bfff 0%, #87ceeb 100%);
+
+  background: linear-gradient(90deg, #204080, #2a70b8);
   color: #fff;
   .header-title {
     font-size: 30px;

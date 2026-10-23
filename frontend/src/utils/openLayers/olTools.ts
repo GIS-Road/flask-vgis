@@ -1,14 +1,14 @@
 /**
  * @name: olTool
  * @description: ol库工具类
- * @author: zyc
- * @time: 2024-06-11
+ * @author: GIS散修（gis_road）
+ * @date: 2026/10/23
  **/
 
 import Overlay from 'ol/Overlay'
 import { getCenter } from 'ol/extent'
 import GeoJSON from 'ol/format/GeoJSON'
-import { defaultStyle, geometrySelectStyle } from '@/utils/OpenLayers/olStyles'
+import { defaultStyle, geometrySelectStyle } from '@/utils/openLayers/olStyles'
 import VectorSource from 'ol/source/Vector'
 import VectorLayer from 'ol/layer/Vector'
 import { Feature } from 'ol'

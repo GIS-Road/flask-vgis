@@ -39,8 +39,6 @@ import { ref } from 'vue'
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import { Close } from '@element-plus/icons-vue'
-import { Vector as VectorSource } from 'ol/source'
-import { GeoJSON } from 'ol/format'
 import VectorLayer from 'ol/layer/Vector'
 import { createPulseEffect } from '@/utils/openLayers/olTools'
 
