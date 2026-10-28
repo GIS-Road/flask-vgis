@@ -5,6 +5,7 @@
         v-model="searchValue"
         placeholder="请输入餐馆名称（如：火锅店）"
         clearable
+        style="width: 250px"
       ></el-input>
       <el-button type="primary" icon="Search" @click="searchPoi">搜索</el-button>
     </div>
@@ -109,8 +110,9 @@ const addToMap = (poi: object) => {
 <style scoped lang="scss">
 .poi-container {
   position: absolute;
-  top: 80px;
+  top: 30px;
   right: 20px;
+  z-index: 999;
 }
 .poi-search {
   display: flex;
@@ -126,7 +128,7 @@ const addToMap = (poi: object) => {
 
 .poi-result {
   margin-top: 10px;
-  background: #008de08f;
+  background: #008de0b8;
   color: #ffffff;
   border-radius: 2.5px;
 }
