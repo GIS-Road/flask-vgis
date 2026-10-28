@@ -1638,83 +1638,128 @@ function applyFeatureStyle(feature) {
 }
 
 // ==================== 小箭头样式 — 细杆 + 三角箭头尖 ====================
-// 构造箭头三角几何
-function buildArrowHeadTriangle(last, angle, headLen, halfW) {
-  const tip = [last[0] + Math.cos(angle) * headLen, last[1] + Math.sin(angle) * headLen]
-  const baseLeft = [
-    last[0] + Math.cos(angle + Math.PI / 2) * halfW,
-    last[1] + Math.sin(angle + Math.PI / 2) * halfW,
-  ]
-  const baseRight = [
-    last[0] + Math.cos(angle - Math.PI / 2) * halfW,
-    last[1] + Math.sin(angle - Math.PI / 2) * halfW,
-  ]
-  return new Polygon([[tip, baseLeft, baseRight, tip]])
-}
-
 // 小箭头样式数组（绘制预览 & 最终要素共用）
-function buildArrowStyles(coords, params) {
+// 小箭头：杆身 + 箭头三角，全部在【像素空间】绘制。
+// 头部尺寸按屏幕像素计算，不随地图缩放级别/坐标系（EPSG:4326 的度）变化，
+// 否则 10 个地图单位在经纬度地图上会变成 10 度、铺满整屏。
+function buildArrowStyles(params) {
   const p = { ...(params || {}) }
   const sc = p.strokeColor || '#4096FF'
   const sw = p.strokeWidth || 2
   const so = p.strokeOpacity !== undefined ? p.strokeOpacity : 1
   const rgba = hexToRgba(sc, so)
   const scale = p.arrowScale || 1
-  const headW = p.arrowHeadWidth || 5
+  const headW = p.arrowHeadWidth || 3
+  const dash =
+    p.strokeDashType === 'dashed' ? [p.dashLength || 8, p.dashGap || 4] : []
 
-  if (!coords || coords.length < 2) return [new Style({ stroke: buildStroke(p) })]
-
-  const last = coords[coords.length - 1]
-  const prev = coords[coords.length - 2]
-  const angle = Math.atan2(last[1] - prev[1], last[0] - prev[0])
-
-  const headLen = 10 * scale
-  const halfW = headW * scale * 0.8
-
-  const arrowHead = buildArrowHeadTriangle(last, angle, headLen, halfW)
-
-  const styles = []
-
-  // 描边层：更粗的杆身 + 放大的箭头三角
-  if (hasOutline(p)) {
-    const ow = p.outlineWidth || 2
-    styles.push(new Style({ stroke: buildOutlineStroke(p, sw) }))
-    styles.push(
-      new Style({
-        geometry: buildArrowHeadTriangle(last, angle, headLen + ow * 1.6, halfW + ow),
-        fill: new Fill({ color: outlineRgba(p) }),
-      })
-    )
-  }
-
-  styles.push(
-    // 杆身
-    new Style({ stroke: buildStroke(p) }),
-    // 箭头三角
+  return [
     new Style({
-      geometry: arrowHead,
-      fill: new Fill({ color: rgba }),
-      stroke: new Stroke({ color: rgba, width: 1 }),
-    })
-  )
+      renderer: (pixelCoordinates, state) => {
+        if (!pixelCoordinates || pixelCoordinates.length < 4) return
 
-  return styles
+        // 归一化为 [[x, y], ...] 像素坐标（OL 可能给扁平或嵌套数组）
+        const pts = []
+        if (Array.isArray(pixelCoordinates[0])) {
+          for (let i = 0; i < pixelCoordinates.length; i++) {
+            pts.push([pixelCoordinates[i][0], pixelCoordinates[i][1]])
+          }
+        } else {
+          for (let i = 0; i + 1 < pixelCoordinates.length; i += 2) {
+            pts.push([pixelCoordinates[i], pixelCoordinates[i + 1]])
+          }
+        }
+        if (pts.length < 2) return
+
+        const context = state.context
+        if (!context) return
+
+        // 头部尺寸（屏幕像素）：1x 约 10px 长、12px 宽
+        const headLen = 10 * scale
+        const halfW = Math.max(sw * 1.2, headW * 2) * scale
+
+        const tip = pts[pts.length - 1]
+        const prev = pts[pts.length - 2]
+        const angle = Math.atan2(tip[1] - prev[1], tip[0] - prev[0])
+
+        // 尖端在终点，底边在终点内侧（箭头指向落点，不越过终点）
+        const baseX = tip[0] - Math.cos(angle) * headLen
+        const baseY = tip[1] - Math.sin(angle) * headLen
+        const nx = Math.cos(angle + Math.PI / 2)
+        const ny = Math.sin(angle + Math.PI / 2)
+        const left = [baseX + nx * halfW, baseY + ny * halfW]
+        const right = [baseX - nx * halfW, baseY - ny * halfW]
+
+        // 杆身路径：起点 → 倒数第二点 → 头部底边中点
+        const drawRod = () => {
+          context.beginPath()
+          context.moveTo(pts[0][0], pts[0][1])
+          for (let i = 1; i < pts.length - 1; i++) {
+            context.lineTo(pts[i][0], pts[i][1])
+          }
+          context.lineTo(baseX, baseY)
+        }
+
+        // 箭头三角路径
+        const drawHead = () => {
+          context.beginPath()
+          context.moveTo(tip[0], tip[1])
+          context.lineTo(left[0], left[1])
+          context.lineTo(right[0], right[1])
+          context.closePath()
+        }
+
+        // 1) 描边层：更粗的杆身 + 三角形外扩描边
+        if (hasOutline(p)) {
+          const ow = p.outlineWidth || 2
+          context.lineJoin = 'round'
+          context.lineCap = 'round'
+
+          drawRod()
+          context.setLineDash(dash)
+          context.strokeStyle = outlineRgba(p)
+          context.lineWidth = sw + ow * 2
+          context.stroke()
+
+          drawHead()
+          context.setLineDash([])
+          context.fillStyle = outlineRgba(p)
+          context.strokeStyle = outlineRgba(p)
+          context.lineWidth = ow * 2
+          context.fill()
+          context.stroke()
+        }
+
+        // 2) 主体：杆身
+        context.lineJoin = 'round'
+        context.lineCap = 'round'
+        drawRod()
+        context.setLineDash(dash)
+        context.strokeStyle = rgba
+        context.lineWidth = sw
+        context.stroke()
+
+        // 3) 主体：箭头三角
+        drawHead()
+        context.setLineDash([])
+        context.fillStyle = rgba
+        context.fill()
+        context.strokeStyle = rgba
+        context.lineWidth = 1
+        context.stroke()
+      },
+    }),
+  ]
 }
 
 function applySmallArrowStyle(feature, params) {
-  const geom = feature.getGeometry()
-  if (!geom) return
-  let coords
-  try {
-    coords = geom.getCoordinates()
-  } catch (e) {
-    return
-  }
-  feature.setStyle(buildArrowStyles(coords, params))
+  feature.setStyle(buildArrowStyles(params))
 }
 
 // 风向箭头样式数组（绘制预览 & 最终要素共用）
-function buildWindArrowStyles(coords, params) {
+// 关键：必须在「像素空间」构造多边形。若用地图坐标，EPSG:4326 的单位是「度」，
+// 8px 的头部会变成 8 度（约 880km），箭头会铺满整屏。
+function buildWindArrowStyles(params) {
   const p = { ...(params || {}) }
   const sc = p.strokeColor || '#4096FF'
   const sw = p.strokeWidth || 2
@@ -1722,48 +1767,74 @@ function buildWindArrowStyles(coords, params) {
   const fc = p.fillColor || sc
   const fo = p.fillOpacity !== undefined ? p.fillOpacity : 0.25
 
-  const polygon = buildTaperedArrowPolygon(coords, p, true)
-  if (!polygon) return [new Style({ stroke: buildStroke(p) })]
-
-  const styles = []
-  // 描边层：同几何、更粗的边线、无填充
-  if (hasOutline(p)) {
-    styles.push(
-      new Style({
-        geometry: polygon,
-        stroke: buildOutlineStroke(p, sw),
-      })
-    )
-  }
-  styles.push(
+  return [
     new Style({
-      geometry: polygon,
-      stroke: new Stroke({
-        color: hexToRgba(sc, so),
-        width: sw,
-        lineJoin: 'round',
-        lineCap: 'round',
-      }),
-      fill: new Fill({ color: hexToRgba(fc, fo) }),
-    })
-  )
-  return styles
+      renderer: (pixelCoordinates, state) => {
+        const pts = normalizePixelPath(pixelCoordinates)
+        if (pts.length < 2) return
+
+        // 在像素空间构造锥形箭头：尺寸/比例稳定，不随投影与缩放变化
+        const polygon = buildTaperedArrowPolygon(pts, p, true)
+        if (!polygon) return
+        const ring = polygon.getCoordinates()[0]
+
+        const context = state.context
+        if (!context) return
+
+        context.beginPath()
+        context.moveTo(ring[0][0], ring[0][1])
+        for (let i = 1; i < ring.length; i++) {
+          context.lineTo(ring[i][0], ring[i][1])
+        }
+        context.closePath()
+
+        context.lineJoin = 'round'
+        context.lineCap = 'round'
+
+        // 1) 外描边：先画一圈更粗的描边，再填充覆盖其内侧
+        if (hasOutline(p)) {
+          const ow = p.outlineWidth || 2
+          context.strokeStyle = outlineRgba(p)
+          context.lineWidth = sw + ow * 2
+          context.stroke()
+        }
+
+        // 2) 主体：填充 + 边线
+        context.fillStyle = hexToRgba(fc, fo)
+        context.fill()
+
+        context.strokeStyle = hexToRgba(sc, so)
+        context.lineWidth = sw
+        context.stroke()
+      },
+    }),
+  ]
+}
+
+// 把 OL 传来的像素坐标（可能是 [[x,y],...] 或扁平数组）统一成 [[x,y],...]
+function normalizePixelPath(pixelCoordinates) {
+  const pts = []
+  if (!pixelCoordinates || !pixelCoordinates.length) return pts
+  if (Array.isArray(pixelCoordinates[0])) {
+    for (let i = 0; i < pixelCoordinates.length; i++) {
+      pts.push([pixelCoordinates[i][0], pixelCoordinates[i][1]])
+    }
+  } else {
+    for (let i = 0; i + 1 < pixelCoordinates.length; i += 2) {
+      pts.push([pixelCoordinates[i], pixelCoordinates[i + 1]])
+    }
+  }
+  return pts
 }
 
 // ==================== 风向箭头样式 — 曲线粗箭头（尾窄→体宽→尖头） ====================
 function applyWindArrowStyle(feature, params) {
-  const geom = feature.getGeometry()
-  if (!geom) return
-  let coords
-  try {
-    coords = geom.getCoordinates()
-  } catch (e) {
-    return
-  }
-  feature.setStyle(buildWindArrowStyles(coords, params))
+  feature.setStyle(buildWindArrowStyles(params))
 }
 
 // ==================== 军标箭头几何函数 — 攻击箭头（尾窄→体宽→V形尖） ====================
+// 注意：coords 必须是「屏幕像素」坐标，宽度参数 headW/bodyW/tailW 均为像素。
+// 传入地图坐标会导致箭头尺寸按「度」放大上千倍。
 function buildTaperedArrowPolygon(coords, params, smooth = false) {
   if (!coords || coords.length < 2) return null
   let path = coords
@@ -2188,8 +2259,8 @@ function activateDrawMode(type) {
   // 绘制预览样式
   drawOptions.style = function (feature) {
     const params = getCurrentParams()
-    if (type === 'Arrow') return createArrowPreviewStyle(params, feature)
-    if (type === 'WindArrow') return createWindArrowPreviewStyle(params, feature)
+    if (type === 'Arrow') return createArrowPreviewStyle(params)
+    if (type === 'WindArrow') return createWindArrowPreviewStyle(params)
     if (type === 'BattleArrow') return createBattleArrowPreviewStyle(params, feature)
     return createStyleFromParams(type, params)
   }
@@ -2238,26 +2309,12 @@ function activateDrawMode(type) {
 }
 
 // ==================== 箭头绘制预览样式 ====================
-function createArrowPreviewStyle(params, feature) {
-  if (!feature) return [new Style({ stroke: buildStroke(params) })]
-  let coords = null
-  try {
-    coords = feature.getGeometry().getCoordinates()
-  } catch (e) {
-    coords = null
-  }
-  return buildArrowStyles(coords, params)
+function createArrowPreviewStyle(params) {
+  return buildArrowStyles(params)
 }
 
-function createWindArrowPreviewStyle(params, feature) {
-  if (!feature) return [new Style({ stroke: buildStroke(params) })]
-  let coords = null
-  try {
-    coords = feature.getGeometry().getCoordinates()
-  } catch (e) {
-    coords = null
-  }
-  return buildWindArrowStyles(coords, params)
+function createWindArrowPreviewStyle(params) {
+  return buildWindArrowStyles(params)
 }
 
 function createBattleArrowPreviewStyle(params, feature) {
