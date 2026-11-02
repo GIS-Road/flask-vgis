@@ -788,7 +788,7 @@
     <!-- 绘制工具按钮组 -->
     <div class="tool-group">
       <button
-        v-for="tool in tools"
+        v-for="tool in mainTools"
         :key="tool.type"
         class="tool-btn"
         :class="{ active: activeTool === tool.type }"
@@ -798,6 +798,21 @@
         <i v-html="tool.icon"></i>
         <span class="tool-label">{{ tool.label }}</span>
       </button>
+
+      <!-- 可展开部分：小箭头以下的风向/军标/画圆/标注 -->
+      <template v-if="expanded">
+        <button
+          v-for="tool in expandableTools"
+          :key="tool.type"
+          class="tool-btn"
+          :class="{ active: activeTool === tool.type }"
+          :title="tool.label"
+          @click="activateTool(tool.type)"
+        >
+          <i v-html="tool.icon"></i>
+          <span class="tool-label">{{ tool.label }}</span>
+        </button>
+      </template>
     </div>
 
     <!-- 分隔线 -->
@@ -840,6 +855,16 @@
         <span>撤销</span>
       </button>
     </div>
+
+    <!-- 展开/收缩切换按钮（整个工具条最后） -->
+    <button
+      class="tool-btn expand-toggle"
+      :title="expanded ? '收起更多绘制工具' : '展开更多绘制工具'"
+      @click="toggleExpanded"
+    >
+      <i v-html="expanded ? collapseIcon : expandIcon"></i>
+      <span class="tool-label">{{ expanded ? '收起' : '更多' }}</span>
+    </button>
   </div>
 </template>
 
@@ -863,6 +888,26 @@ const props = defineProps({
 
 // 绘制激活状态变化时通知宿主（用于阻止地图点击拾取坐标等），宿主可不监听
 const emit = defineEmits(['drawing-active'])
+
+// ==================== 工具栏展开/收缩 ====================
+// 默认只显示前 7 个工具（选择→小箭头），其余（风向/军标/画圆/标注）收起，
+// 通过底部切换按钮向下展开 / 向上收起
+const MAIN_TOOL_COUNT = 7
+const expanded = ref(false)
+const mainTools = computed(() => tools.slice(0, MAIN_TOOL_COUNT))
+const expandableTools = computed(() => tools.slice(MAIN_TOOL_COUNT))
+const expandIcon =
+  '<svg viewBox="0 0 20 20" width="20" height="20"><path d="M5 8l5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+const collapseIcon =
+  '<svg viewBox="0 0 20 20" width="20" height="20"><path d="M5 12l5-5 5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+
+function toggleExpanded() {
+  expanded.value = !expanded.value
+  // 收起时：若当前激活的工具被收起，先退出绘制状态
+  if (!expanded.value && activeTool.value && !mainTools.value.some((t) => t.type === activeTool.value)) {
+    deactivateTool()
+  }
+}
 
 // ==================== 工具定义 ====================
 const tools = [
@@ -2772,6 +2817,19 @@ onUnmounted(() => {
   margin-top: 1px;
   font-weight: 500;
   letter-spacing: 0.5px;
+}
+
+/* ===== 展开/收缩切换按钮（工具列表末尾、分隔线上方） ===== */
+.expand-toggle {
+  color: rgba(255, 255, 255, 0.55);
+  margin-top: 2px;
+  border-radius: 6px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.18);
+}
+
+.expand-toggle:hover {
+  color: #bae0ff;
+  background: rgba(64, 150, 255, 0.15);
 }
 
 /* ===== 分隔线 ===== */

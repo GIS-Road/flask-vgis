@@ -19,6 +19,9 @@
         </div>
       </div>
     </div>
+    <div class="middle-container">
+      <div class="middle-box">这里是中部工具条</div>
+    </div>
     <Map></Map>
   </div>
 </template>
@@ -96,5 +99,8 @@ onMounted(() => {
 .user-icon {
   vertical-align: middle;
   font-size: 30px;
+}
+.middle-container {
+  height: 45px;
 }
 </style>

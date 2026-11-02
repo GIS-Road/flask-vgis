@@ -1,7 +1,7 @@
 <template>
   <div class="zoom-bar-container">
     <button class="zoom-bar-item" title="放大" @click="zoomIn">
-      <svg-icon icon-class="tabler:zoom-in" />
+      <SvgIcon icon-class="tabler:zoom-in" />
     </button>
     <button class="zoom-bar-item" title="缩放到起始位置" @click="resetPosition">
       <svg-icon icon-class="ri:home-4-fill" />
@@ -51,9 +51,9 @@ const resetPosition = () => {
 <style scoped lang="scss">
 .zoom-bar-container {
   position: absolute;
-  z-index: 99;
-  left: 10px;
-  top: 20px;
+  //z-index: 99;
+  right: 10px;
+  bottom: 120px;
   width: 40px;
   border-radius: 5px;
   background-color: #255b9f;
