@@ -2753,7 +2753,7 @@ onUnmounted(() => {
 <style scoped>
 .drawing-toolbar {
   position: absolute;
-  top: 120px;
+  top: 20px;
   right: 12px;
   display: flex;
   flex-direction: column;

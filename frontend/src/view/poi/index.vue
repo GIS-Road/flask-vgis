@@ -1,5 +1,5 @@
 <template>
-  <div class="poi-container">
+  <div class="poi-container" :class="{ 'poi-inline': inline }">
     <div class="poi-search">
       <el-input
         v-model="searchValue"
@@ -42,6 +42,8 @@ import { ElMessage } from 'element-plus'
 import { Close } from '@element-plus/icons-vue'
 import VectorLayer from 'ol/layer/Vector'
 import { createPulseEffect } from '@/utils/openLayers/olTools'
+
+defineProps<{ inline?: boolean }>()
 
 const searchValue = ref('')
 const page = ref(1)
@@ -113,6 +115,10 @@ const addToMap = (poi: object) => {
   top: 30px;
   right: 20px;
   z-index: 999;
+
+  &.poi-inline {
+    position: static;
+  }
 }
 .poi-search {
   display: flex;
@@ -127,10 +133,17 @@ const addToMap = (poi: object) => {
 }
 
 .poi-result {
-  margin-top: 10px;
-  background: #008de0b8;
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 20px;
+  min-width: 320px;
+  max-height: 450px;
+  background: rgba(0, 141, 224, 0.95);
   color: #ffffff;
-  border-radius: 2.5px;
+  border-radius: 4px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  overflow: auto;
+  z-index: 1000;
 }
 .result-header {
   display: flex;

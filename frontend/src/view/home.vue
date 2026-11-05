@@ -20,7 +20,7 @@
       </div>
     </div>
     <div class="middle-container">
-      <div class="middle-box">这里是中部工具条</div>
+      <POI inline />
     </div>
     <Map></Map>
   </div>
@@ -29,6 +29,7 @@
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import Map from './map/index.vue'
+import POI from './poi/index.vue'
 import { removeToken } from '@/utils/auth'
 import { Avatar } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -73,6 +74,8 @@ onMounted(() => {
 .main-container {
   width: 100%;
   height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 .header {
   display: flex;
@@ -101,6 +104,14 @@ onMounted(() => {
   font-size: 30px;
 }
 .middle-container {
+  position: relative;
   height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 20px;
+  background: linear-gradient(90deg, #1a3670, #204080);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  overflow: visible;
 }
 </style>

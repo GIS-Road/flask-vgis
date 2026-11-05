@@ -53,7 +53,7 @@ const resetPosition = () => {
   position: absolute;
   //z-index: 99;
   right: 10px;
-  bottom: 120px;
+  bottom: 60px;
   width: 40px;
   border-radius: 5px;
   background-color: #255b9f;
