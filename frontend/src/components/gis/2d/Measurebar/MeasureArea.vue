@@ -1,20 +1,6 @@
 <template>
-  <div class="measure-area">
-    <div class="measure-tip" v-if="active">
-      <span>单击地图添加顶点，双击结束绘制</span>
-      <span class="measure-clear" @click="clearAll" title="清除所有测量">
-        <svg viewBox="0 0 14 14" width="12" height="12">
-          <path d="M3 3 L11 11 M11 3 L3 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
-        </svg>
-        清除
-      </span>
-      <span class="measure-close" @click="$emit('close')" title="关闭测量">
-        <svg viewBox="0 0 12 12" width="12" height="12">
-          <path d="M2 2 L10 10 M10 2 L2 10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-        </svg>
-      </span>
-    </div>
-  </div>
+  <!-- 无界面组件：仅负责在图上绘制与标注 -->
+  <span style="display: none"></span>
 </template>
 
 <script setup lang="ts">
@@ -32,9 +18,8 @@ import { Fill, Stroke } from 'ol/style'
 const props = defineProps<{
   map: Map | null
   active: boolean
+  clearTick?: number
 }>()
-
-defineEmits(['close'])
 
 const MEASURE_LAYER_NAME = 'measureAreaLayer'
 
@@ -139,6 +124,8 @@ function startMeasure() {
   })
 
   map.addInteraction(drawInteraction)
+  // 标记交互归属，便于退出测量时精准清理
+  drawInteraction.set('measureTool', 'area')
 
   // 4. 设置鼠标样式
   const target = map.getTargetElement() as HTMLElement
@@ -154,6 +141,13 @@ function stopMeasure() {
     drawInteraction = null
   }
 
+  // 兜底：移除所有面积测量的 Draw 交互，避免残留交互继续响应鼠标
+  map.getInteractions().getArray().slice().forEach((i) => {
+    if ((i as any).get && (i as any).get('measureTool') === 'area') {
+      map.removeInteraction(i)
+    }
+  })
+
   // 恢复鼠标样式
   const target = map.getTargetElement() as HTMLElement
   target.style.cursor = ''
@@ -165,6 +159,12 @@ watch(
     if (val) startMeasure()
     else stopMeasure()
   }
+)
+
+// 绘制工具条点击“清除”时，同步清空面积测量结果
+watch(
+  () => props.clearTick,
+  () => clearAll()
 )
 
 onBeforeUnmount(() => {
@@ -186,46 +186,6 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped lang="scss">
-.measure-area {
-  pointer-events: none;
-}
-
-.measure-tip {
-  position: absolute;
-  top: 140px;
-  right: 10px;
-  z-index: 1100;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 6px 12px;
-  background: rgba(37, 91, 159, 0.95);
-  border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  font-size: 12px;
-  color: #ffffff;
-  pointer-events: auto;
-  user-select: none;
-
-  .measure-clear,
-  .measure-close {
-    display: flex;
-    align-items: center;
-    gap: 3px;
-    padding: 3px 6px;
-    border-radius: 3px;
-    cursor: pointer;
-    color: rgba(255, 255, 255, 0.9);
-    transition: background 0.15s;
-  }
-  .measure-clear:hover {
-    background: rgba(255, 255, 255, 0.15);
-  }
-  .measure-close:hover {
-    background: rgba(245, 34, 45, 0.25);
-    color: #ffcccc;
-  }
-}
 </style>
 
 <!-- Overlay 里的标签样式（非 scoped） -->

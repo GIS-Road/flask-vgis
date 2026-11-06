@@ -887,7 +887,7 @@ const props = defineProps({
 })
 
 // 绘制激活状态变化时通知宿主（用于阻止地图点击拾取坐标等），宿主可不监听
-const emit = defineEmits(['drawing-active'])
+const emit = defineEmits(['drawing-active', 'clear'])
 
 // ==================== 工具栏展开/收缩 ====================
 // 默认只显示前 7 个工具（选择→小箭头），其余（风向/军标/画圆/标注）收起，
@@ -2680,6 +2680,9 @@ function clearDrawings() {
 
   // 2. 关闭（停用）当前绘制工具，退出绘制状态
   deactivateTool()
+
+  // 3. 通知外部（测量结果）一并清除
+  emit('clear')
 }
 
 function undoLast() {

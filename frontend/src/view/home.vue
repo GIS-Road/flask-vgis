@@ -20,9 +20,10 @@
       </div>
     </div>
     <div class="middle-container">
+      <Measurebar v-model:active="measureType" />
       <POI inline />
     </div>
-    <Map></Map>
+    <Map :measure-type="measureType"></Map>
   </div>
 </template>
 <script setup lang="ts">
@@ -30,6 +31,7 @@ import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import Map from './map/index.vue'
 import POI from './poi/index.vue'
+import Measurebar from '@/components/Gis/2d/Measurebar/index.vue'
 import { removeToken } from '@/utils/auth'
 import { Avatar } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -37,6 +39,9 @@ import axios from 'axios'
 const router = useRouter()
 
 const user = ref({})
+
+// 当前测量工具（'area' | 'distance' | null），由中部工具条按钮控制
+const measureType = ref<'area' | 'distance' | null>(null)
 
 const logout = () => {
   ElMessageBox.confirm('是否要退出系统？', '警告', {
@@ -109,9 +114,11 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  gap: 16px;
   padding: 0 20px;
   background: linear-gradient(90deg, #1a3670, #204080);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   overflow: visible;
+  z-index: 10;
 }
 </style>

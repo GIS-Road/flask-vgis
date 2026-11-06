@@ -40,10 +40,19 @@
 
     <!--缩放工具-->
     <Zoombar :map="mapInstance" />
-    <!-- 测量工具（右上角） -->
-    <Measurebar :map="mapInstance" />
+    <!-- 面积/距离测量（按钮位于中部工具条） -->
+    <MeasureArea
+      :map="mapInstance"
+      :active="measureType === 'area'"
+      :clear-tick="clearTick"
+    />
+    <MeasureDistance
+      :map="mapInstance"
+      :active="measureType === 'distance'"
+      :clear-tick="clearTick"
+    />
     <!-- 绘制工具栏（右侧） -->
-    <Toolbar :map="mapInstance" />
+    <Toolbar :map="mapInstance" @clear="handleClear" />
     <!-- 底部状态栏 -->
     <Statusbar :map="mapInstance" />
   </div>
@@ -54,10 +63,22 @@ import { Map, View } from 'ol'
 import { addTDTCvaLayer, addTDTImageLayer } from '@/utils/olLayer'
 import Toolbar from '@/components/Gis/2d/Toolbar/index.vue'
 import Zoombar from '@/components/Gis/2d/Zoombar/index.vue'
-import Measurebar from '@/components/Gis/2d/Measurebar/index.vue'
+import MeasureArea from '@/components/Gis/2d/Measurebar/MeasureArea.vue'
+import MeasureDistance from '@/components/Gis/2d/Measurebar/MeasureDistance.vue'
 import LayerManager from '@/components/Gis/2d/LayerManager/index.vue'
 import Statusbar from '@/components/Gis/2d/Statusbar/index.vue'
 import { defaults } from 'ol/control'
+
+type MeasureType = 'area' | 'distance' | null
+
+defineProps<{ measureType?: MeasureType }>()
+
+// 点击绘制工具条“清除”按钮时自增，触发测量组件清空结果
+const clearTick = ref(0)
+
+function handleClear() {
+  clearTick.value++
+}
 
 const defaultId = ref('map-default')
 
