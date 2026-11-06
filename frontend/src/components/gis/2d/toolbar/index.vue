@@ -887,7 +887,7 @@ const props = defineProps({
 })
 
 // 绘制激活状态变化时通知宿主（用于阻止地图点击拾取坐标等），宿主可不监听
-const emit = defineEmits(['drawing-active', 'clear'])
+const emit = defineEmits(['drawing-active', 'clear', 'tool-active-change'])
 
 // ==================== 工具栏展开/收缩 ====================
 // 默认只显示前 7 个工具（选择→小箭头），其余（风向/军标/画圆/标注）收起，
@@ -2141,27 +2141,54 @@ function activateTool(type) {
   }
 
   activeTool.value = type
+  emit('tool-active-change', type)
   syncAnimationLoop()
 }
 
 // ==================== 选择模式 ====================
 function activateSelectMode() {
+  // Select 图层：Toolbar 绘制图层 + 动态包含测量图层（面积 + 距离）
   selectInteraction = new Select({
-    layers: [vectorLayer],
+    layers: () => {
+      const layers = [vectorLayer]
+      if (!props.map) return layers
+      props.map.getLayers().getArray().forEach((l) => {
+        const name = l.get && l.get('layerName')
+        if (name === 'measureAreaLayer' || name === 'measureDistanceLayer') {
+          layers.push(l)
+        }
+      })
+      return layers
+    },
   })
+  selectInteraction.set('component', 'toolbar')
 
   modifyInteraction = new Modify({
     features: selectInteraction.getFeatures(),
   })
+  modifyInteraction.set('component', 'toolbar')
 
   selectInteraction.on('select', (e) => {
-    e.deselected.forEach((f) => applyFeatureStyle(f))
+    e.deselected.forEach((f) => {
+      // 测量要素没有 styleParams，applyFeatureStyle 内部会自动跳过
+      applyFeatureStyle(f)
+    })
 
     if (e.selected.length > 0) {
-      selectedFeature.value = e.selected[0]
-      isSelectPicked.value = true
-      updatePanelFromFeature(e.selected[0])
-      applySelectionHighlight(e.selected[0])
+      const feat = e.selected[0]
+      // 测量要素：不进入样式编辑面板，仅允许 Modify 编辑几何
+      const isMeasure = feat.get && feat.get('isMeasure')
+      if (!isMeasure) {
+        selectedFeature.value = feat
+        isSelectPicked.value = true
+        updatePanelFromFeature(feat)
+        applySelectionHighlight(feat)
+      } else {
+        // 测量要素：selectedFeature 置空避免样式面板误显示，
+        // 但 Select 交互内部仍持有它，Modify 可以正常操作
+        selectedFeature.value = null
+        isSelectPicked.value = false
+      }
     } else {
       selectedFeature.value = null
       isSelectPicked.value = false
@@ -2170,6 +2197,9 @@ function activateSelectMode() {
 
   modifyInteraction.on('modifyend', (e) => {
     e.features.forEach((f) => {
+      // 测量要素跳过 Toolbar 样式应用，它自己有几何 change 监听更新 Overlay
+      const isMeasure = f.get && f.get('isMeasure')
+      if (isMeasure) return
       applyFeatureStyle(f)
       if (f === selectedFeature.value) applySelectionHighlight(f)
     })
@@ -2311,6 +2341,7 @@ function activateDrawMode(type) {
   }
 
   drawInteraction = new Draw(drawOptions)
+  drawInteraction.set('component', 'toolbar')
   // sketch（绘制预览）图层：强制刷新缓存，使动态样式在落点前也能预览
   sketchLayer = drawInteraction.getOverlay()
 
@@ -2449,6 +2480,9 @@ function purgeDrawingInteractions() {
     .getArray()
     .slice()
     .forEach((interaction) => {
+      // 只清 Toolbar 自己创建的交互，保留测量组件的 Draw
+      const comp = interaction.get && interaction.get('component')
+      if (comp !== 'toolbar') return
       if (
         interaction instanceof Draw ||
         interaction instanceof Select ||
@@ -2495,6 +2529,7 @@ function deactivateTool() {
   selectedFeature.value = null
   isSelectPicked.value = false
   activeTool.value = null
+  emit('tool-active-change', null)
   syncAnimationLoop()
 
   emit('drawing-active', false)

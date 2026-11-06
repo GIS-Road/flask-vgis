@@ -19,6 +19,7 @@ const props = defineProps<{
   map: Map | null
   active: boolean
   clearTick?: number
+  toolbarActive?: string | null
 }>()
 
 const MEASURE_LAYER_NAME = 'measureAreaLayer'
@@ -58,14 +59,28 @@ function createAreaOverlay(polygon: Polygon, areaText: string): Overlay {
 // 清除所有测量图层和 Overlay
 function clearAll() {
   if (!props.map) return
-  // 清除 Overlay
-  props.map.getOverlays().forEach((ol) => {
-    if (ol.get('layerName') === 'measureAreaOverlay') {
-      props.map!.removeOverlay(ol)
+  const map = props.map
+
+  // 先解绑所有 feature 的几何 change 监听（source.clear() 不会自动解绑）
+  const layer = map.getLayers().getArray().find(
+    (l) => (l as any).get('layerName') === MEASURE_LAYER_NAME
+  ) as VectorLayer | undefined
+  const src = layer?.getSource() as VectorSource | null | undefined
+  if (src) {
+    src.getFeatures().forEach((f) => {
+      const listener = f.get('measureGeomChangeListener')
+      const geom = f.getGeometry()
+      if (listener && geom) geom.un('change', listener)
+    })
+    src.clear()
+  }
+
+  // 清除 Overlays
+  map.getOverlays().getArray().slice().forEach((ol) => {
+    if (ol && typeof (ol as any).get === 'function' && ol.get('layerName') === 'measureAreaOverlay') {
+      map.removeOverlay(ol)
     }
   })
-  // 清除 features
-  measureSource?.clear()
 }
 
 // 初始化
@@ -121,6 +136,23 @@ function startMeasure() {
     // 添加 Overlay 标签
     const overlay = createAreaOverlay(geom, areaText)
     map.addOverlay(overlay)
+
+    // 给 feature 打标记，供 Toolbar Select 识别
+    evt.feature.set('isMeasure', true)
+    evt.feature.set('measureType', 'area')
+    evt.feature.set('measureOverlay', overlay)
+
+    // 监听几何变化（Modify 拖拽节点时触发），实时更新面积值和 Overlay 位置
+    const onGeomChange = () => {
+      const g = evt.feature.getGeometry() as Polygon
+      if (!g) return
+      const newArea = getArea(g, { projection: map.getView().getProjection() })
+      const newText = formatArea(newArea)
+      overlay.getElement()!.innerHTML = `面积: <b>${newText}</b>`
+      overlay.setPosition(g.getInteriorPoint().getCoordinates())
+    }
+    geom.on('change', onGeomChange)
+    evt.feature.set('measureGeomChangeListener', onGeomChange)
   })
 
   map.addInteraction(drawInteraction)
@@ -158,6 +190,8 @@ watch(
   (val) => {
     if (val) startMeasure()
     else stopMeasure()
+    // 切换工具类型（面积 ↔ 距离）时，保留已有测量结果，不清空
+    // 只有 Toolbar 清除按钮或 toggle off 最后一个工具时才全清
   }
 )
 
@@ -167,17 +201,30 @@ watch(
   () => clearAll()
 )
 
+// Toolbar 激活工具时，暂停测量 Draw 交互，避免和 Select/Draw 抢 pointerdown
+watch(
+  () => props.toolbarActive,
+  (tbActive) => {
+    if (!drawInteraction) return
+    if (tbActive) {
+      drawInteraction.setActive(false)
+    } else if (props.active) {
+      drawInteraction.setActive(true)
+    }
+  }
+)
+
 onBeforeUnmount(() => {
   stopMeasure()
-  // 组件销毁时清除测量图层
+  // 组件销毁时清除测量图层（用 .slice() 复制集合 + dispose 防护）
   if (props.map) {
-    props.map.getOverlays().forEach((ol) => {
-      if (ol.get('layerName') === 'measureAreaOverlay') {
+    props.map.getOverlays().getArray().slice().forEach((ol) => {
+      if (ol && typeof (ol as any).get === 'function' && ol.get('layerName') === 'measureAreaOverlay') {
         props.map!.removeOverlay(ol)
       }
     })
-    props.map.getLayers().forEach((l) => {
-      if ((l as any).get('layerName') === MEASURE_LAYER_NAME) {
+    props.map.getLayers().getArray().slice().forEach((l) => {
+      if (l && typeof (l as any).get === 'function' && (l as any).get('layerName') === MEASURE_LAYER_NAME) {
         props.map!.removeLayer(l)
       }
     })

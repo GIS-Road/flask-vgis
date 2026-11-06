@@ -45,14 +45,16 @@
       :map="mapInstance"
       :active="measureType === 'area'"
       :clear-tick="clearTick"
+      :toolbar-active="toolbarActive"
     />
     <MeasureDistance
       :map="mapInstance"
       :active="measureType === 'distance'"
       :clear-tick="clearTick"
+      :toolbar-active="toolbarActive"
     />
     <!-- 绘制工具栏（右侧） -->
-    <Toolbar :map="mapInstance" @clear="handleClear" />
+    <Toolbar :map="mapInstance" @clear="handleClear" @tool-active-change="handleToolActive" />
     <!-- 底部状态栏 -->
     <Statusbar :map="mapInstance" />
   </div>
@@ -75,9 +77,16 @@ defineProps<{ measureType?: MeasureType }>()
 
 // 点击绘制工具条“清除”按钮时自增，触发测量组件清空结果
 const clearTick = ref(0)
+// Toolbar 当前激活的工具类型（'Select'/'Point'/...）或 null
+// 用来通知测量组件暂停 Draw，避免和 Select/Draw 交互抢事件
+const toolbarActive = ref<string | null>(null)
 
 function handleClear() {
   clearTick.value++
+}
+
+function handleToolActive(type: string | null) {
+  toolbarActive.value = type
 }
 
 const defaultId = ref('map-default')

@@ -4,6 +4,7 @@
 </template>
 
 <script setup lang="ts">
+import { watch, onBeforeUnmount } from 'vue'
 import type { Map } from 'ol'
 import Draw from 'ol/interaction/Draw'
 import VectorSource from 'ol/source/Vector'
@@ -18,6 +19,7 @@ const props = defineProps<{
   map: Map | null
   active: boolean
   clearTick?: number
+  toolbarActive?: string | null
 }>()
 
 const MEASURE_LAYER_NAME = 'measureDistanceLayer'
@@ -56,12 +58,28 @@ function createDistanceOverlay(line: LineString, distText: string): Overlay {
 
 function clearAll() {
   if (!props.map) return
-  props.map.getOverlays().forEach((ol) => {
-    if (ol.get('layerName') === 'measureDistanceOverlay') {
-      props.map!.removeOverlay(ol)
+  const map = props.map
+
+  // 先解绑所有 feature 的几何 change 监听（source.clear() 不会自动解绑）
+  const layer = map.getLayers().getArray().find(
+    (l) => (l as any).get('layerName') === MEASURE_LAYER_NAME
+  ) as VectorLayer | undefined
+  const src = layer?.getSource() as VectorSource | null | undefined
+  if (src) {
+    src.getFeatures().forEach((f) => {
+      const listener = f.get('measureGeomChangeListener')
+      const geom = f.getGeometry()
+      if (listener && geom) geom.un('change', listener)
+    })
+    src.clear()
+  }
+
+  // 清除 Overlays
+  map.getOverlays().getArray().slice().forEach((ol) => {
+    if (ol && typeof (ol as any).get === 'function' && ol.get('layerName') === 'measureDistanceOverlay') {
+      map.removeOverlay(ol)
     }
   })
-  measureSource?.clear()
 }
 
 function startMeasure() {
@@ -78,7 +96,7 @@ function startMeasure() {
     measureLayer = new VectorLayer({
       source: measureSource,
       style: new Style({
-        stroke: new Stroke({ color: '#52c41a', width: 2.5 }),
+        stroke: new Stroke({ color: '#4096FF', width: 2.5 }),
       }),
     })
     measureLayer.set('layerName', MEASURE_LAYER_NAME)
@@ -92,11 +110,10 @@ function startMeasure() {
     type: 'LineString',
     style: new Style({
       stroke: new Stroke({
-        color: '#52c41a',
+        color: '#4096FF',
         width: 2.5,
         lineDash: [5, 5],
       }),
-      image: undefined as any,
     }),
   })
 
@@ -109,6 +126,24 @@ function startMeasure() {
 
     const overlay = createDistanceOverlay(geom, distText)
     map.addOverlay(overlay)
+
+    // 给 feature 打标记，供 Toolbar Select 识别
+    evt.feature.set('isMeasure', true)
+    evt.feature.set('measureType', 'distance')
+    evt.feature.set('measureOverlay', overlay)
+
+    // 监听几何变化（Modify 拖拽节点时触发），实时更新距离值和 Overlay 位置
+    const onGeomChange = () => {
+      const g = evt.feature.getGeometry() as LineString
+      if (!g) return
+      const newLen = getLength(g, { projection: map.getView().getProjection() })
+      const newText = formatDistance(newLen)
+      overlay.getElement()!.innerHTML = `距离: <b>${newText}</b>`
+      const coords = g.getCoordinates()
+      overlay.setPosition(coords[coords.length - 1])
+    }
+    geom.on('change', onGeomChange)
+    evt.feature.set('measureGeomChangeListener', onGeomChange)
   })
 
   map.addInteraction(drawInteraction)
@@ -134,13 +169,12 @@ function stopMeasure() {
   target.style.cursor = ''
 }
 
-import { watch, onBeforeUnmount } from 'vue'
-
 watch(
   () => props.active,
   (val) => {
     if (val) startMeasure()
     else stopMeasure()
+    // 切换工具类型时保留已有测量结果，不清空
   }
 )
 
@@ -150,16 +184,29 @@ watch(
   () => clearAll()
 )
 
+// Toolbar 激活工具时，暂停测量 Draw 交互，避免和 Select/Draw 抢 pointerdown
+watch(
+  () => props.toolbarActive,
+  (tbActive) => {
+    if (!drawInteraction) return
+    if (tbActive) {
+      drawInteraction.setActive(false)
+    } else if (props.active) {
+      drawInteraction.setActive(true)
+    }
+  }
+)
+
 onBeforeUnmount(() => {
   stopMeasure()
   if (props.map) {
-    props.map.getOverlays().forEach((ol) => {
-      if (ol.get('layerName') === 'measureDistanceOverlay') {
+    props.map.getOverlays().getArray().slice().forEach((ol) => {
+      if (ol && typeof (ol as any).get === 'function' && ol.get('layerName') === 'measureDistanceOverlay') {
         props.map!.removeOverlay(ol)
       }
     })
-    props.map.getLayers().forEach((l) => {
-      if ((l as any).get('layerName') === MEASURE_LAYER_NAME) {
+    props.map.getLayers().getArray().slice().forEach((l) => {
+      if (l && typeof (l as any).get === 'function' && (l as any).get('layerName') === MEASURE_LAYER_NAME) {
         props.map!.removeLayer(l)
       }
     })
