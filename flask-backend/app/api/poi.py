@@ -6,6 +6,8 @@ Version:   1.0.0
 Date:      2026/10/19
 """
 
+import json
+
 from flask import Blueprint, request, jsonify
 from app.extentions import db
 from app.common.response import ok,fail
@@ -27,6 +29,7 @@ def _build_filters(src):
             params[field] = f"%{value}%"
     return filters, params
 
+# 分页查询POI数据
 @bp.route("/list", methods=["GET"])
 def get_poi_list():
     try:
@@ -84,7 +87,7 @@ def get_poi_list():
     }
     return ok(data)
 
-
+# 分页查询POI数据，传递对象参数
 @bp.route("/query", methods=["POST"])
 def query_poi():
     # 前端传 JSON 对象，例如：
@@ -134,6 +137,79 @@ def query_poi():
     """)
     raw = db.session.execute(data_sql, params).mappings()
     rows = [dict(r) for r in raw]
+
+    total_pages = 1 if is_all else (total + size - 1) // size
+    data = {
+        "total": total,
+        "pagination": {
+            "page": page,
+            "size": total if is_all else size,
+            "total_pages": total_pages,
+        },
+        "rows": rows,
+    }
+    return ok(data)
+
+# 按空间范围查询POI数据
+# 请求体示例：
+# {"geometry":{"type":"Polygon","coordinates":[[[107.1,26.5],...]]},
+#  "name":"鱼","page":1,"size":20,"all":false}
+# geometry 为 GeoJSON 几何对象（4326），可选叠加属性过滤条件
+@bp.route("/spatialQuery",methods=["POST"])
+def spatialQuery():
+    payload = request.get_json(silent=True) or {}
+
+    geometry = payload.get("geometry") or payload.get("geojson")
+    if not geometry:
+        return fail("缺少 geometry 参数（GeoJSON 几何对象）", 400)
+
+    try:
+        page = int(payload.get("page", 1) or 1)
+        size = int(payload.get("size", 20) or 20)
+    except (ValueError, TypeError):
+        return jsonify({"error": "page 和 size 必须是整数"}), 400
+
+    if size > 500:
+        size = 500
+    if page < 1:
+        page = 1
+    offset = (page - 1) * size
+
+    # ① 属性过滤（白名单）+ 空间相交条件（占位符绑定，几何体只作参数）
+    filters, params = _build_filters(payload)
+    filters.append("Intersects(GEOMETRY, SetSRID(GeomFromGeoJSON(:geojson), 4326))")
+    params["geojson"] = json.dumps(geometry, ensure_ascii=False)
+
+    where = "WHERE " + " AND ".join(filters)
+
+    is_all = bool(payload.get("all"))
+
+    try:
+        # ② 总数（带同样条件）
+        count_sql = text(f"SELECT COUNT(*) AS total FROM guizhou_ly {where}")
+        total = db.session.execute(count_sql, params).fetchone().total
+
+        # ③ 数据查询
+        if is_all:
+            limit_clause = ""
+        else:
+            limit_clause = "LIMIT :size OFFSET :offset"
+            params["size"] = size
+            params["offset"] = offset
+
+        data_sql = text(f"""
+            SELECT ogc_fid, address, adname, adcode, cityname, name,
+                   lon_wgs84, lat_wgs84, type,
+                   AsGeoJSON(GEOMETRY, 6) AS geom_json
+            FROM guizhou_ly
+            {where}
+            {limit_clause}
+        """)
+        raw = db.session.execute(data_sql, params).mappings()
+        rows = [dict(r) for r in raw]
+    except Exception as e:
+        db.session.rollback()
+        return fail(f"空间查询失败：{e}", 500)
 
     total_pages = 1 if is_all else (total + size - 1) // size
     data = {

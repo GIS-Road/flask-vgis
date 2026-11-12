@@ -1,0 +1,232 @@
+/**
+ * @name: openLayers.scss
+ * @description: openLayers 样式
+ * @author: zyz
+ * @date: 2025-08-07
+ */
+
+.ol-overlay-container p {
+  margin: 5px 0 !important;
+}
+
+.ol-overlay-container {
+  color: #fff;
+  border-radius: 2px;
+  padding: 2px;
+  line-height: 16px;
+}
+
+.ol-overlay-container {
+  max-height: 250px;
+  .popup-analyse-btn {
+    width: 100%;
+    background-color: rgb(219, 197, 137);
+    padding: 10px;
+    border-radius: 2.5px;
+    margin-top: 10px;
+    display: inline-block;
+    color: #fffefe;
+    border-color: #fff;
+    text-align: center;
+    &:hover {
+      cursor: pointer;
+      color: #fff;
+      filter: brightness(110%) opacity(100%);
+      transition: all .5s ease-in;
+      background: linear-gradient(to bottom right, #9a99f1, #0167cc);
+    }
+
+    &:focus {
+      filter: brightness(120%);
+      transition: all .5s ease-in;
+      background: radial-gradient(circle at center, #9a99f1, #0167cc);
+    }
+
+  }
+  .custom-popup{
+    overflow-y: scroll;
+    max-height: 250px;
+    min-width: 350px;
+    max-width: 400px;
+  }
+
+  .custom-popup-header{
+    position: sticky;
+    top: 0;
+    z-index: 99;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 0 10px;
+    height: 45px;
+    line-height: 45px;
+    background-image: url(../assets/images/sw_01.png);
+    background-color: #0167cc;;
+    border-top-left-radius: 2.5px;
+    border-top-right-radius: 2.5px;
+
+    .custom-popup-title{
+      color: #fff;
+      font-weight: bold;
+      font-size: 16px;
+    }
+    .custom-popup-close{
+      display: block;
+      width: 30px;
+      height: 30px;
+      margin-top: 6px;
+      line-height: 30px;
+      color: #9c9c9c;
+      font-size: 16px;
+      border-radius: 50%;
+      text-align: center;
+      &:hover{
+        cursor: pointer;
+        font-size: 18px;
+        color: red;
+        border-radius: 50%;
+        background-color: #9bcbde;
+        transition: all .5s ease-in;
+        //filter: brightness(1.5);
+      }
+    }
+  }
+
+  .custom-header-angle{
+    position: absolute;
+    display: block;
+    top: -15px;
+    left: 50%;
+    width: 0;
+    height: 0;
+    transform: translateX(-50%);
+    border-left: 40px solid transparent;
+    border-right: 40px solid transparent;
+    border-bottom: 30px solid #003468;
+  }
+
+  .popup-table{
+    max-height: 250px;
+    overflow-y: auto;
+    width: 100%;
+    height: 100%;
+    background-size: 100% 100%;
+    background-color: #409eff21;
+    border: 1px solid #d9d9d9ad;
+    border-collapse: collapse;
+    background-image: url(../assets/images/sw_02.png);
+    .table-tr{
+      width: 100%;
+      &:hover{
+        cursor: pointer;
+        background-color: #0c698d61;
+      }
+      td{
+        padding: 10px 5px;
+        line-height: 1.5;
+      }
+      td:first-child{
+        text-align: right;
+        width: 45%;
+      }
+      td:last-child{
+        text-align: left;
+        width: 55%;
+      }
+    }
+  }
+  .select-analyse-popup{
+    table{
+      border: 1px solid #fff;
+      border-collapse: collapse;
+      tr{
+        td{
+          padding: 10px 5px;
+          line-height: 1.5;
+        }
+        td:first-child{
+          text-align: right;
+        }
+        td:last-child{
+          text-align: left;
+        }
+      }
+    }
+  }
+}
+
+.query-header{
+  position: sticky;
+  top: 0;
+  z-index: 99;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 0 10px;
+  height: 45px;
+  line-height: 45px;
+  background-color: #0167cc;;
+  border-top-left-radius: 2.5px;
+  border-top-right-radius: 2.5px;
+  .query-header-span{
+    color: #fff;
+    font-weight: bold;
+    font-size: 16px;
+  }
+  .query-header-close{
+    display: block;
+    width: 30px;
+    height: 30px;
+    margin-top: 6px;
+    line-height: 30px;
+    color: #9c9c9c;
+    font-size: 16px;
+    border-radius: 50%;
+    text-align: center;
+    &:hover{
+      cursor: pointer;
+      font-size: 18px;
+      color: red;
+      border-radius: 50%;
+      background-color: #9bcbde;
+      transition: all .5s ease-in;
+      //filter: brightness(1.5);
+    }
+  }
+}
+
+.query-tabs{
+  position: sticky;
+  top: 40px;
+  width: 100%;
+  overflow-y: scroll;
+  max-height: 80px;
+  min-height: 30px;
+  background: #004066;
+  .query-tab-content{
+    padding: 10px;
+    // 设置元素横向排列不换行
+    // white-space: nowrap;
+    scrollbar-width: thin;
+    scrollbar-color: #999999 #dddddd;
+  }
+  .query-tab-span{
+    padding: 5px;
+    display: inline-block;
+    margin-right: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 2.5px;
+    font-size: 14px;
+  }
+  .query-tab-span:hover{
+    cursor: pointer;
+    background: #0796f0;
+    transition: all .5s ease-in;
+  }
+}
+
+.query-tab-active{
+  background: #0796f0;
+  font-weight: bold;
+}
