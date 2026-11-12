@@ -41,7 +41,8 @@ import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import { Close } from '@element-plus/icons-vue'
 import VectorLayer from 'ol/layer/Vector'
-import { createPulseEffect } from '@/utils/openLayers/olTools'
+import { createPulseEffect, poiPopupColumns, removeOverlayByName, setPopup } from '@/utils/openLayers/olTools'
+import { Point } from 'ol/geom'
 
 defineProps<{ inline?: boolean }>()
 
@@ -80,6 +81,7 @@ const pageChange = (currentPage: number) => {
 // 关闭结果面板
 const closePanel = () => {
   tableData.value = []
+  removeOverlayByName('overLay', window._map)
   const layers = window._map
     .getLayers()
     .getArray()
@@ -89,7 +91,7 @@ const closePanel = () => {
   })
 }
 
-const addToMap = (poi: object) => {
+const addToMap = (poi: any) => {
   const geomJson = typeof poi.geom_json === 'string' ? JSON.parse(poi.geom_json) : poi.geom_json
   // console.log('json数据·1：', geomJson)
   // const source = new VectorSource({
@@ -106,7 +108,13 @@ const addToMap = (poi: object) => {
   // 获取图层范围
   // const layerExtent = layer.getSource()?.getExtent()
   // window._map.getView().fit(layerExtent)
-  window._map.getView().setZoom(15)
+  // 动画飞行到 POI 并弹出详细信息弹窗
+  window._map.getView().animate({
+    center: geomJson.coordinates,
+    zoom: 15,
+    duration: 500,
+  })
+  setPopup(poi, poiPopupColumns, new Point(geomJson.coordinates), window._map)
 }
 </script>
 <style scoped lang="scss">

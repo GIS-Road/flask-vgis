@@ -3,7 +3,7 @@
     <div :id="defaultId"></div>
 
     <!--左侧工具按钮（面板打开时隐藏） -->
-    <div class="side-bar" v-show="activePanel === null">
+    <div v-show="activePanel === null" class="side-bar">
       <div
         v-for="(tool, i) in tools"
         :key="i"
@@ -21,17 +21,25 @@
       :map="mapInstance"
       @close="activePanel = null"
     />
+    <!-- 空间查询面板 -->
+    <SpatialQuery
+      v-if="activePanel === 'SpatialQuery'"
+      :map="mapInstance"
+      :toolbar-active="toolbarActive"
+      @close="activePanel = null"
+    />
     <!-- 其他面板占位 -->
-    <div
-      v-else-if="activePanel"
-      class="placeholder-panel"
-      @click="activePanel = null"
-    >
+    <div v-else-if="activePanel" class="placeholder-panel" @click="activePanel = null">
       <div class="placeholder-header">
         <span>{{ tools.find((t) => t.name === activePanel)?.label }}</span>
         <span class="placeholder-close">
           <svg viewBox="0 0 12 12" width="12" height="12">
-            <path d="M2 2 L10 10 M10 2 L2 10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+            <path
+              d="M2 2 L10 10 M10 2 L2 10"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+            />
           </svg>
         </span>
       </div>
@@ -63,12 +71,13 @@
 import { onMounted, ref } from 'vue'
 import { Map, View } from 'ol'
 import { addTDTCvaLayer, addTDTImageLayer } from '@/utils/olLayer'
-import Toolbar from '@/components/Gis/2d/Toolbar/index.vue'
-import Zoombar from '@/components/Gis/2d/Zoombar/index.vue'
-import MeasureArea from '@/components/Gis/2d/Measurebar/MeasureArea.vue'
-import MeasureDistance from '@/components/Gis/2d/Measurebar/MeasureDistance.vue'
-import LayerManager from '@/components/Gis/2d/LayerManager/index.vue'
-import Statusbar from '@/components/Gis/2d/Statusbar/index.vue'
+import Toolbar from '@/components/GIS/2d/Toolbar/index.vue'
+import Zoombar from '@/components/GIS/2d/Zoombar/index.vue'
+import MeasureArea from '@/components/GIS/2d/Measurebar/MeasureArea.vue'
+import MeasureDistance from '@/components/GIS/2d/Measurebar/MeasureDistance.vue'
+import LayerManager from '@/components/GIS/2d/LayerManager/index.vue'
+import SpatialQuery from '@/components/GIS/2d/SpatialQuery/index.vue'
+import Statusbar from '@/components/GIS/2d/Statusbar/index.vue'
 import { defaults } from 'ol/control'
 
 type MeasureType = 'area' | 'distance' | null
@@ -125,6 +134,7 @@ const initMap = () => {
   })
   window._map = map
   addTDTImageLayer(map)
+  addTDTCvaLayer(map)
   mapInstance.value = map
 }
 
@@ -159,8 +169,14 @@ $panel-width: 350px;
 }
 
 @keyframes slide-in {
-  from { transform: translateX(-10px); opacity: 0.85; }
-  to { transform: translateX(0); opacity: 1; }
+  from {
+    transform: translateX(-10px);
+    opacity: 0.85;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
 #map-default {
@@ -184,7 +200,9 @@ $panel-width: 350px;
     :deep(.el-button) {
       background-color: #1d4a85;
       border-color: #4096ff;
-      box-shadow: 0 0 0 1px #4096ff inset, 0 0 8px rgba(64, 150, 255, 0.35);
+      box-shadow:
+        0 0 0 1px #4096ff inset,
+        0 0 8px rgba(64, 150, 255, 0.35);
     }
   }
 }
@@ -192,7 +210,9 @@ $panel-width: 350px;
 // 其他面板占位
 .placeholder-panel {
   position: absolute;
-  top: 0; left: 0; bottom: 0;
+  top: 0;
+  left: 0;
+  bottom: 0;
   width: $panel-width;
   background-color: #255b9f;
   border-right: 1px solid rgba(255, 255, 255, 0.15);
@@ -216,11 +236,15 @@ $panel-width: 350px;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 24px; height: 24px;
+    width: 24px;
+    height: 24px;
     border-radius: 4px;
     color: rgba(255, 255, 255, 0.6);
     cursor: pointer;
-    &:hover { background: rgba(245, 34, 45, 0.2); color: #ffcccc; }
+    &:hover {
+      background: rgba(245, 34, 45, 0.2);
+      color: #ffcccc;
+    }
   }
   .placeholder-body {
     flex: 1;

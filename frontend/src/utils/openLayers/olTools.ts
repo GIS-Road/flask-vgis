@@ -18,6 +18,21 @@ import CircleStyle from 'ol/style/Circle'
 import { Fill, Stroke } from 'ol/style'
 
 /**
+ * POI 信息弹窗字段
+ * name：后端返回字段名；comment：弹窗中显示的中文标签
+ */
+export const poiPopupColumns = [
+  { name: 'name', comment: '名称' },
+  { name: 'type', comment: '类型' },
+  { name: 'address', comment: '地址' },
+  { name: 'cityname', comment: '城市' },
+  { name: 'adname', comment: '区县' },
+  { name: 'adcode', comment: '区划编码' },
+  { name: 'lon_wgs84', comment: '经度' },
+  { name: 'lat_wgs84', comment: '纬度' },
+]
+
+/**
  * @description：动画飞到指定地点
  * @param point
  * @param zoomNum

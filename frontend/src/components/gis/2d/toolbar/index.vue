@@ -2804,7 +2804,6 @@ onUnmounted(() => {
   width: 52px;
   min-width: 52px;
   user-select: none;
-  z-index: 20;
 }
 
 /* ===== 工具按钮组 ===== */

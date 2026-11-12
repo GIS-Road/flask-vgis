@@ -11,7 +11,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
-    BaseMap: typeof import('./src/components/Gis/2d/BaseMap/index.vue')['default']
+    BaseMap: typeof import('./src/components/GIS/2d/BaseMap/index.vue')['default']
     ElButton: typeof import('element-plus/es')['ElButton']
     ElDivider: typeof import('element-plus/es')['ElDivider']
     ElDropdown: typeof import('element-plus/es')['ElDropdown']
@@ -22,16 +22,17 @@ declare module 'vue' {
     ElInput: typeof import('element-plus/es')['ElInput']
     ElPagination: typeof import('element-plus/es')['ElPagination']
     ElText: typeof import('element-plus/es')['ElText']
-    LayerManager: typeof import('./src/components/Gis/2d/LayerManager/index.vue')['default']
-    MeasureArea: typeof import('./src/components/Gis/2d/Measurebar/MeasureArea.vue')['default']
-    Measurebar: typeof import('./src/components/Gis/2d/Measurebar/index.vue')['default']
-    MeasureDistance: typeof import('./src/components/Gis/2d/Measurebar/MeasureDistance.vue')['default']
+    LayerManager: typeof import('./src/components/GIS/2d/LayerManager/index.vue')['default']
+    MeasureArea: typeof import('./src/components/GIS/2d/Measurebar/MeasureArea.vue')['default']
+    Measurebar: typeof import('./src/components/GIS/2d/Measurebar/index.vue')['default']
+    MeasureDistance: typeof import('./src/components/GIS/2d/Measurebar/MeasureDistance.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
-    Searchbar: typeof import('./src/components/Gis/2d/Searchbar/index.vue')['default']
-    Statusbar: typeof import('./src/components/Gis/2d/Statusbar/index.vue')['default']
+    Searchbar: typeof import('./src/components/GIS/2d/Searchbar/index.vue')['default']
+    SpatialQuery: typeof import('./src/components/GIS/2d/SpatialQuery/index.vue')['default']
+    Statusbar: typeof import('./src/components/GIS/2d/Statusbar/index.vue')['default']
     SvgIcon: typeof import('./src/components/SvgIcon/index.vue')['default']
-    Toolbar: typeof import('./src/components/Gis/2d/Toolbar/index.vue')['default']
-    Zoombar: typeof import('./src/components/Gis/2d/Zoombar/index.vue')['default']
+    Toolbar: typeof import('./src/components/GIS/2d/Toolbar/index.vue')['default']
+    Zoombar: typeof import('./src/components/GIS/2d/Zoombar/index.vue')['default']
   }
 }
