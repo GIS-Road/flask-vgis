@@ -1,9 +1,9 @@
 <template>
-  <div class="map-container" :class="{ 'panel-open': activePanel !== null }">
+  <div class="map-container" :class="{ 'panel-open': !!activePanel }">
     <div :id="defaultId"></div>
 
     <!--左侧工具按钮（面板打开时隐藏） -->
-    <div v-show="activePanel === null" class="side-bar">
+    <div v-show="activePanel === ''" class="side-bar">
       <div
         v-for="(tool, i) in tools"
         :key="i"
@@ -19,17 +19,39 @@
     <LayerManager
       v-if="activePanel === 'LayerManager'"
       :map="mapInstance"
-      @close="activePanel = null"
+      @close="activePanel = ''"
     />
     <!-- 空间查询面板 -->
     <SpatialQuery
       v-if="activePanel === 'SpatialQuery'"
       :map="mapInstance"
       :toolbar-active="toolbarActive"
-      @close="activePanel = null"
+      @close="activePanel = ''"
+    />
+    <!-- 空间分析面板（缓冲区分析） -->
+    <SpatialAnalysis
+      v-if="activePanel === 'SpatialAnalysis'"
+      :map="mapInstance"
+      :toolbar-active="toolbarActive"
+      @close="activePanel = ''"
+    />
+    <!-- 空间可视化面板（热力图/密度图） -->
+    <SpatialVisualization
+      v-if="activePanel === 'SpatialVisualization'"
+      :map="mapInstance"
+      :toolbar-active="toolbarActive"
+      @close="activePanel = ''"
     />
     <!-- 其他面板占位 -->
-    <div v-else-if="activePanel" class="placeholder-panel" @click="activePanel = null">
+    <div
+      v-if="
+        !['LayerManager', 'SpatialQuery', 'SpatialAnalysis', 'SpatialVisualization', ''].includes(
+          <string>activePanel
+        )
+      "
+      class="placeholder-panel"
+      @click="activePanel = ''"
+    >
       <div class="placeholder-header">
         <span>{{ tools.find((t) => t.name === activePanel)?.label }}</span>
         <span class="placeholder-close">
@@ -77,6 +99,8 @@ import MeasureArea from '@/components/GIS/2d/Measurebar/MeasureArea.vue'
 import MeasureDistance from '@/components/GIS/2d/Measurebar/MeasureDistance.vue'
 import LayerManager from '@/components/GIS/2d/LayerManager/index.vue'
 import SpatialQuery from '@/components/GIS/2d/SpatialQuery/index.vue'
+import SpatialAnalysis from '@/components/GIS/2d/SpatialAnalysis/index.vue'
+import SpatialVisualization from '@/components/GIS/2d/SpatialVisualization/index.vue'
 import Statusbar from '@/components/GIS/2d/Statusbar/index.vue'
 import { defaults } from 'ol/control'
 
@@ -108,14 +132,15 @@ const tools = ref([
   { name: 'LayerManager', label: '图层管理' },
   { name: 'SpatialQuery', label: '空间查询' },
   { name: 'SpatialAnalysis', label: '空间分析' },
-  { name: 'SpatialVisualize', label: '空间可视化' },
+  { name: 'SpatialVisualization', label: '空间可视化' },
 ])
 
 // 当前打开的左侧面板（null 表示全部关闭）
-const activePanel = ref<string | null>(null)
+const activePanel = ref<string | null>('')
 
 function togglePanel(name: string) {
-  activePanel.value = activePanel.value === name ? null : name
+  // 关闭面板统一回到 ''（空字符串），保证侧边工具按钮 v-show="activePanel === ''" 始终可见
+  activePanel.value = activePanel.value === name ? '' : name
 }
 
 const initMap = () => {
@@ -125,6 +150,7 @@ const initMap = () => {
       center: [106.640431, 26.650764],
       zoom: 12,
       projection: 'EPSG:4326',
+      maxZoom: 18,
     }),
     controls: defaults({
       zoom: false,

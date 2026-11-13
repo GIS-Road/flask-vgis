@@ -163,6 +163,7 @@ import {
   poiPopupColumns,
   removeOverlayByName,
   setPopup,
+  stopPulseEffect,
 } from '@/utils/openLayers/olTools'
 
 interface PoiItem {
@@ -458,7 +459,10 @@ function clearResults() {
   totalPages.value = 0
   queried.value = false
   clearResultLayer()
-  if (props.map) removeOverlayByName('overLay', props.map)
+  if (props.map) {
+    removeOverlayByName('overLay', props.map)
+    stopPulseEffect(props.map)
+  }
 }
 
 // ==================== toolbarActive 互斥 ====================
@@ -486,6 +490,10 @@ function cleanup() {
   totalPages.value = 0
   queried.value = false
   drawnGeom.value = null
+  if (props.map) {
+    removeOverlayByName('overLay', props.map)
+    stopPulseEffect(props.map)
+  }
 }
 
 onBeforeUnmount(cleanup)

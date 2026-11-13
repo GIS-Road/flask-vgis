@@ -182,9 +182,10 @@ export function setPopup(property, popupColumns, polygonGeometry, map) {
   overlay.setProperties({ layerName: 'overLay' })
   map.addOverlay(overlay)
 
-  // 监听popup移除事件
+  // 监听popup移除事件：关闭弹窗的同时停止脉冲动画（选中效果）
   closeSpan.addEventListener('click', (evt) => {
     removeOverlayByName('overLay', map)
+    stopPulseEffect(map)
   })
 }
 
@@ -315,9 +316,10 @@ export function openPopupOfQueryLayer(results, map) {
     queryWrap.appendChild(tableEle)
   }
   showOverlay(popupInfo)
-  // 监听popup移除事件
+  // 监听popup移除事件：关闭弹窗的同时停止脉冲动画（选中效果）
   closeSpan.addEventListener('click', (evt) => {
     removeOverlayByName('overLay', map)
+    stopPulseEffect(map)
   })
 }
 
@@ -326,7 +328,12 @@ export function openPopupOfQueryLayer(results, map) {
  * @param map {Map}：地图对象
  * @param coordinate {Coordinate [x,y]}：地图坐标点对象
  **/
+// 当前脉冲动画的清除句柄（模块级，保证同一时刻只有一个脉冲在跑）
+let pulseCancel: (() => void) | null = null
+
 export function createPulseEffect(map, coordinate) {
+  // 先停掉上一个脉冲动画，避免多个 rAF 循环叠加
+  if (pulseCancel) pulseCancel()
   removeLayerByName('poiLayer')
   const pulseFeatures = []
   const source = new VectorSource()
@@ -343,6 +350,7 @@ export function createPulseEffect(map, coordinate) {
   map.getView().fit(pulseFeatures[0].getGeometry())
 
   let radius = 5
+  let rafId = 0
   const animate = () => {
     radius = radius >= 20 ? 5 : radius + 0.1
 
@@ -365,9 +373,28 @@ export function createPulseEffect(map, coordinate) {
       )
     })
 
-    requestAnimationFrame(animate)
+    rafId = requestAnimationFrame(animate)
   }
   animate()
-  // 返回清除函数
-  return () => map.removeLayer(layer)
+
+  // 清除函数：取消 rAF 循环 + 移除脉冲图层
+  const cancel = () => {
+    if (rafId) {
+      cancelAnimationFrame(rafId)
+      rafId = 0
+    }
+    map.removeLayer(layer)
+    if (pulseCancel === cancel) pulseCancel = null
+  }
+  pulseCancel = cancel
+  return cancel
+}
+
+/**
+ * 停止脉冲动画并移除脉冲图层（关闭弹窗、清空结果时调用）
+ * @param map：地图对象
+ */
+export function stopPulseEffect(map = window._map) {
+  if (pulseCancel) pulseCancel()
+  removeLayerByName('poiLayer', map)
 }

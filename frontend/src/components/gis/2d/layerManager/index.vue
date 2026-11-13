@@ -4,8 +4,25 @@
     <div class="panel-header">
       <div class="panel-title">
         <svg viewBox="0 0 16 16" width="16" height="16">
-          <rect x="1" y="1" width="14" height="14" rx="2" fill="none" stroke="#4096FF" stroke-width="1.2" />
-          <line x1="1" y1="5.5" x2="15" y2="5.5" stroke="#4096FF" stroke-width="0.8" opacity="0.5" />
+          <rect
+            x="1"
+            y="1"
+            width="14"
+            height="14"
+            rx="2"
+            fill="none"
+            stroke="#4096FF"
+            stroke-width="1.2"
+          />
+          <line
+            x1="1"
+            y1="5.5"
+            x2="15"
+            y2="5.5"
+            stroke="#4096FF"
+            stroke-width="0.8"
+            opacity="0.5"
+          />
           <rect x="3" y="2.5" width="3" height="2" rx="0.5" fill="#4096FF" opacity="0.6" />
           <rect x="10" y="8" width="4" height="1.5" rx="0.5" fill="#69b1ff" opacity="0.4" />
           <rect x="3" y="8" width="5" height="1.5" rx="0.5" fill="#69b1ff" opacity="0.4" />
@@ -15,7 +32,12 @@
       </div>
       <div class="panel-toggle" title="关闭" @click="$emit('close')">
         <svg viewBox="0 0 12 12" width="12" height="12">
-          <path d="M2 2 L10 10 M10 2 L2 10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+          <path
+            d="M2 2 L10 10 M10 2 L2 10"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+          />
         </svg>
       </div>
     </div>
@@ -24,12 +46,30 @@
     <div class="layer-search-wrapper">
       <svg class="layer-search-icon" viewBox="0 0 16 16" width="14" height="14">
         <circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" stroke-width="1.3" />
-        <line x1="11" y1="11" x2="14.5" y2="14.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" />
+        <line
+          x1="11"
+          y1="11"
+          x2="14.5"
+          y2="14.5"
+          stroke="currentColor"
+          stroke-width="1.3"
+          stroke-linecap="round"
+        />
       </svg>
-      <input v-model="filterText" class="layer-search-input" type="text" placeholder="搜索图层..." />
+      <input
+        v-model="filterText"
+        class="layer-search-input"
+        type="text"
+        placeholder="搜索图层..."
+      />
       <span v-if="filterText" class="layer-search-clear" @click="filterText = ''">
         <svg viewBox="0 0 12 12" width="10" height="10">
-          <path d="M2 2 L10 10 M10 2 L2 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+          <path
+            d="M2 2 L10 10 M10 2 L2 10"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+          />
         </svg>
       </span>
     </div>
@@ -47,8 +87,22 @@
         <span class="layer-icon" :class="layer.iconClass">
           <template v-if="layer.isBaseMap">
             <svg viewBox="0 0 16 16" width="16" height="16">
-              <rect x="1" y="3" width="14" height="10" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.2" />
-              <path d="M1 5 L15 5 M4 3 L4 13 M9 3 L9 13 M13 3 L13 13" stroke="currentColor" stroke-width="0.8" opacity="0.5" />
+              <rect
+                x="1"
+                y="3"
+                width="14"
+                height="10"
+                rx="1.5"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.2"
+              />
+              <path
+                d="M1 5 L15 5 M4 3 L4 13 M9 3 L9 13 M13 3 L13 13"
+                stroke="currentColor"
+                stroke-width="0.8"
+                opacity="0.5"
+              />
             </svg>
           </template>
           <template v-else-if="layer.isVector">
@@ -61,7 +115,16 @@
           </template>
           <template v-else>
             <svg viewBox="0 0 16 16" width="16" height="16">
-              <rect x="2" y="4" width="12" height="8" rx="1" fill="none" stroke="currentColor" stroke-width="1.2" />
+              <rect
+                x="2"
+                y="4"
+                width="12"
+                height="8"
+                rx="1"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.2"
+              />
               <path d="M2 8 L14 8" stroke="currentColor" stroke-width="0.8" opacity="0.5" />
             </svg>
           </template>
@@ -77,16 +140,27 @@
         <span
           class="eye-icon"
           :class="{ 'eye-visible': layer.visible, 'eye-hidden': !layer.visible }"
-          @click.stop="toggleVisibility(layer)"
           :title="layer.visible ? '隐藏图层' : '显示图层'"
+          @click.stop="toggleVisibility(layer)"
         >
           <svg v-if="layer.visible" viewBox="0 0 16 16" width="14" height="14">
-            <path d="M8 4C4.5 4 1.5 7 0.5 8c1 1 4 4 7.5 4S14.5 9 15.5 8c-1-1-4-4-7.5-4z" fill="none" stroke="currentColor" stroke-width="1.2" />
+            <path
+              d="M8 4C4.5 4 1.5 7 0.5 8c1 1 4 4 7.5 4S14.5 9 15.5 8c-1-1-4-4-7.5-4z"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.2"
+            />
             <circle cx="8" cy="8" r="2.5" fill="none" stroke="currentColor" stroke-width="1.2" />
             <circle cx="8" cy="8" r="0.8" fill="currentColor" />
           </svg>
           <svg v-else viewBox="0 0 16 16" width="14" height="14">
-            <path d="M8 4C4.5 4 1.5 7 0.5 8c1 1 4 4 7.5 4S14.5 9 15.5 8c-1-1-4-4-7.5-4z" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.4" />
+            <path
+              d="M8 4C4.5 4 1.5 7 0.5 8c1 1 4 4 7.5 4S14.5 9 15.5 8c-1-1-4-4-7.5-4z"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.2"
+              opacity="0.4"
+            />
             <line x1="2" y1="2" x2="14" y2="14" stroke="currentColor" stroke-width="1.2" />
           </svg>
         </span>
@@ -95,12 +169,23 @@
         <span
           class="opacity-icon"
           :class="{ 'opacity-active': activeOpacityUid === layer.olUid }"
-          @click.stop="openOpacitySlider(layer, $event)"
           title="透明度"
+          @click.stop="openOpacitySlider(layer, $event)"
         >
           <svg viewBox="0 0 16 16" width="14" height="14">
-            <path d="M8 5.5a2.5 2.5 0 100 5 2.5 2.5 0 000-5z" fill="none" stroke="currentColor" stroke-width="1.2" />
-            <path d="M8 1.5l-.6 1.8a4.8 4.8 0 00-1.3.5L4.4 2.8 2.8 4.4l1 1.7a4.8 4.8 0 00-.5 1.3L1.5 8l1.8.6c.1.5.3.9.5 1.3l-1 1.7 1.6 1.6 1.7-1c.4.2.8.4 1.3.5L8 14.5l.6-1.8c.5-.1.9-.3 1.3-.5l1.7 1 1.6-1.6-1-1.7c.2-.4.4-.8.5-1.3l1.8-.6-1.8-.6a4.8 4.8 0 00-.5-1.3l1-1.7-1.6-1.6-1.7 1a4.8 4.8 0 00-1.3-.5L8 1.5z" fill="none" stroke="currentColor" stroke-width="1" stroke-linejoin="round" />
+            <path
+              d="M8 5.5a2.5 2.5 0 100 5 2.5 2.5 0 000-5z"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.2"
+            />
+            <path
+              d="M8 1.5l-.6 1.8a4.8 4.8 0 00-1.3.5L4.4 2.8 2.8 4.4l1 1.7a4.8 4.8 0 00-.5 1.3L1.5 8l1.8.6c.1.5.3.9.5 1.3l-1 1.7 1.6 1.6 1.7-1c.4.2.8.4 1.3.5L8 14.5l.6-1.8c.5-.1.9-.3 1.3-.5l1.7 1 1.6-1.6-1-1.7c.2-.4.4-.8.5-1.3l1.8-.6-1.8-.6a4.8 4.8 0 00-.5-1.3l1-1.7-1.6-1.6-1.7 1a4.8 4.8 0 00-1.3-.5L8 1.5z"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1"
+              stroke-linejoin="round"
+            />
           </svg>
         </span>
       </div>
@@ -123,7 +208,12 @@
       <span class="opacity-value">{{ Math.round(activeOpacityLayer.opacity * 100) }}%</span>
       <span class="opacity-close" @click="activeOpacityUid = null">
         <svg viewBox="0 0 12 12" width="10" height="10">
-          <path d="M2 2 L10 10 M10 2 L2 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+          <path
+            d="M2 2 L10 10 M10 2 L2 10"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+          />
         </svg>
       </span>
     </div>
@@ -162,10 +252,7 @@ function refreshLayers() {
 
   collection.forEach((layer: any) => {
     const uid = (layer as any).get?.('ol_uid') ?? Math.random() * 1e9
-    const name =
-      layer.get?.('layerName') ||
-      layer.get?.('name') ||
-      `图层 ${uid}`
+    const name = layer.get?.('layerName') || layer.get?.('name') || `图层 ${uid}`
     const isBaseMap = !!layer.get?.('isBaseMap')
     const layerClassName = layer.getClassName?.() || ''
     const isVector = layerClassName.includes('ol-layer-vector')
@@ -333,9 +420,14 @@ onBeforeUnmount(() => {
   border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: 6px;
   transition: border-color 0.2s;
-  &:focus-within { border-color: rgba(255, 255, 255, 0.5); }
+  &:focus-within {
+    border-color: rgba(255, 255, 255, 0.5);
+  }
 }
-.layer-search-icon { flex-shrink: 0; color: rgba(255, 255, 255, 0.6); }
+.layer-search-icon {
+  flex-shrink: 0;
+  color: rgba(255, 255, 255, 0.6);
+}
 .layer-search-input {
   flex: 1;
   background: transparent;
@@ -345,17 +437,23 @@ onBeforeUnmount(() => {
   color: #ffffff;
   min-width: 0;
 }
-.layer-search-input::placeholder { color: rgba(255, 255, 255, 0.4); }
+.layer-search-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
 .layer-search-clear {
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: 16px; height: 16px;
+  width: 16px;
+  height: 16px;
   border-radius: 3px;
   cursor: pointer;
   color: rgba(255, 255, 255, 0.5);
-  &:hover { color: #fff; background: rgba(255, 255, 255, 0.2); }
+  &:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.2);
+  }
 }
 
 // 图层列表
@@ -374,10 +472,15 @@ onBeforeUnmount(() => {
   cursor: pointer;
   transition: background 0.15s;
   margin-bottom: 2px;
-  &:hover { background: rgba(255, 255, 255, 0.1); }
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
   &.is-selected {
     background: rgba(255, 255, 255, 0.2);
-    .layer-label { color: #ffffff; font-weight: 500; }
+    .layer-label {
+      color: #ffffff;
+      font-weight: 500;
+    }
   }
 }
 
@@ -412,22 +515,35 @@ onBeforeUnmount(() => {
 }
 
 // 眼睛图标
-.eye-icon, .opacity-icon {
+.eye-icon,
+.opacity-icon {
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: 20px; height: 20px;
+  width: 20px;
+  height: 20px;
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s;
   color: rgba(255, 255, 255, 0.5);
-  &:hover { background: rgba(255, 255, 255, 0.15); }
+  &:hover {
+    background: rgba(255, 255, 255, 0.15);
+  }
 }
-.eye-visible { color: rgba(255, 255, 255, 0.9); }
-.eye-hidden { color: rgba(255, 255, 255, 0.35); }
-.eye-hidden:hover { color: rgba(255, 255, 255, 0.7); }
-.opacity-icon.opacity-active { color: #ffffff; background: rgba(255, 255, 255, 0.25); }
+.eye-visible {
+  color: rgba(255, 255, 255, 0.9);
+}
+.eye-hidden {
+  color: rgba(255, 255, 255, 0.35);
+}
+.eye-hidden:hover {
+  color: rgba(255, 255, 255, 0.7);
+}
+.opacity-icon.opacity-active {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.25);
+}
 
 .empty-tip {
   text-align: center;
@@ -468,7 +584,8 @@ onBeforeUnmount(() => {
 .opacity-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 14px; height: 14px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
   background: #ffffff;
   cursor: pointer;
@@ -486,10 +603,14 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 18px; height: 18px;
+  width: 18px;
+  height: 18px;
   border-radius: 4px;
   cursor: pointer;
   color: rgba(255, 255, 255, 0.5);
-  &:hover { background: rgba(255, 255, 255, 0.2); color: #fff; }
+  &:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+  }
 }
 </style>

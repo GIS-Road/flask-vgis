@@ -41,7 +41,13 @@ import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import { Close } from '@element-plus/icons-vue'
 import VectorLayer from 'ol/layer/Vector'
-import { createPulseEffect, poiPopupColumns, removeOverlayByName, setPopup } from '@/utils/openLayers/olTools'
+import {
+  createPulseEffect,
+  poiPopupColumns,
+  removeOverlayByName,
+  setPopup,
+  stopPulseEffect,
+} from '@/utils/openLayers/olTools'
 import { Point } from 'ol/geom'
 
 defineProps<{ inline?: boolean }>()
@@ -82,6 +88,7 @@ const pageChange = (currentPage: number) => {
 const closePanel = () => {
   tableData.value = []
   removeOverlayByName('overLay', window._map)
+  stopPulseEffect(window._map)
   const layers = window._map
     .getLayers()
     .getArray()
