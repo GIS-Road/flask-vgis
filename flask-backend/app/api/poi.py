@@ -15,6 +15,28 @@ from sqlalchemy import text
 
 bp = Blueprint("poi",__name__)
 
+# 全量 POI 坐标点（热力图/密度图等可视化数据源）
+# 返回 GeoJSON FeatureCollection，只带坐标不带属性，3.4w 条体积可控
+@bp.route("/geoPoints",methods=["GET"])
+def geoPoints():
+    try:
+        sql = text("SELECT lon_wgs84, lat_wgs84 FROM guizhou_ly")
+        rows = db.session.execute(sql).fetchall()
+    except Exception as e:
+        db.session.rollback()
+        return fail(f"获取POI坐标失败：{e}", 500)
+
+    features = [
+        {
+            "type": "Feature",
+            "geometry": {"type": "Point", "coordinates": [r[0], r[1]]},
+            "properties": {},
+        }
+        for r in rows
+    ]
+    return ok({"count": len(features), "geojson": {"type": "FeatureCollection", "features": features}})
+
+
 # 允许做模糊匹配的字段白名单：列名写死在此，绝不来自用户输入，从根本上杜绝 SQL 注入
 _LIKE_FIELDS = ("name", "type", "address", "cityname", "adname")
 
@@ -218,6 +240,98 @@ def spatialQuery():
             "page": page,
             "size": total if is_all else size,
             "total_pages": total_pages,
+        },
+        "rows": rows,
+    }
+    return ok(data)
+
+# 缓冲区分析查询POI
+# 请求体示例：
+# {"geometry":{"type":"Point","coordinates":[109.14,26.24]},
+#  "distance":500,"page":1,"size":10}
+# geometry 支持 Point / LineString / Polygon（4326）；distance 缓冲半径，单位米
+@bp.route("/bufferQuery",methods=["POST"])
+def bufferQuery():
+    payload = request.get_json(silent=True) or {}
+
+    geometry = payload.get("geometry") or payload.get("geojson")
+    if not geometry:
+        return fail("缺少 geometry 参数（GeoJSON 几何对象）", 400)
+
+    try:
+        distance = float(payload.get("distance", 0) or 0)
+    except (ValueError, TypeError):
+        return jsonify({"error": "distance 必须是数字"}), 400
+    if distance <= 0:
+        return fail("distance 必须大于 0（单位：米）", 400)
+    # 上限 20km，防止超大缓冲拖垮全表扫描
+    if distance > 20000:
+        distance = 20000
+
+    try:
+        page = int(payload.get("page", 1) or 1)
+        size = int(payload.get("size", 10) or 10)
+    except (ValueError, TypeError):
+        return jsonify({"error": "page 和 size 必须是整数"}), 400
+
+    if size > 500:
+        size = 500
+    if page < 1:
+        page = 1
+    offset = (page - 1) * size
+
+    try:
+        # ① 生成缓冲几何：4326 → 3857（米制）做缓冲，再转回 4326 给前端渲染
+        buffer_sql = text("""
+            SELECT AsGeoJSON(
+                Transform(
+                    Buffer(Transform(SetSRID(GeomFromGeoJSON(:geojson), 4326), 3857), :dist),
+                    4326
+                ), 6) AS buffer_json
+        """)
+        buffer_params = {"geojson": json.dumps(geometry, ensure_ascii=False), "dist": distance}
+        buffer_json = db.session.execute(buffer_sql, buffer_params).fetchone().buffer_json
+
+        # ② 属性过滤（白名单）+ 缓冲相交条件
+        filters, params = _build_filters(payload)
+        filters.append(
+            "Intersects(Transform(GEOMETRY, 3857), "
+            "Buffer(Transform(SetSRID(GeomFromGeoJSON(:geojson), 4326), 3857), :dist))"
+        )
+        params["geojson"] = json.dumps(geometry, ensure_ascii=False)
+        params["dist"] = distance
+        where = "WHERE " + " AND ".join(filters)
+
+        # ③ 总数
+        count_sql = text(f"SELECT COUNT(*) AS total FROM guizhou_ly {where}")
+        total = db.session.execute(count_sql, params).fetchone().total
+
+        # ④ 数据查询
+        limit_clause = "LIMIT :size OFFSET :offset"
+        params["size"] = size
+        params["offset"] = offset
+        data_sql = text(f"""
+            SELECT ogc_fid, address, adname, adcode, cityname, name,
+                   lon_wgs84, lat_wgs84, type,
+                   AsGeoJSON(GEOMETRY, 6) AS geom_json
+            FROM guizhou_ly
+            {where}
+            {limit_clause}
+        """)
+        raw = db.session.execute(data_sql, params).mappings()
+        rows = [dict(r) for r in raw]
+    except Exception as e:
+        db.session.rollback()
+        return fail(f"缓冲分析失败：{e}", 500)
+
+    data = {
+        "distance": distance,
+        "buffer": json.loads(buffer_json) if buffer_json else None,
+        "total": total,
+        "pagination": {
+            "page": page,
+            "size": size,
+            "total_pages": (total + size - 1) // size,
         },
         "rows": rows,
     }
